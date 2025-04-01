@@ -9,6 +9,6 @@ export class EnvConfigService implements IEnvConfig {
     return this.configService.get<number>('PORT')!
   }
   getNodeEnv(): string {
-    return this.configService.get<string>('NODEENV')!
+    return this.configService.get<string>('NODE_ENV')!
   }
 }

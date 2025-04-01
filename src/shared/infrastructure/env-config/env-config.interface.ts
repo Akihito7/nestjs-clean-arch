@@ -5,5 +5,5 @@ export interface IEnvConfig {
 
 export interface IEnv {
   PORT: number
-  NODEENV: string
+  NODE_ENV: string
 }
