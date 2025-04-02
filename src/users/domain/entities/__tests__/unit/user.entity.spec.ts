@@ -13,9 +13,28 @@ describe('UserEntity Unit Tests', () => {
     SUT = new UserEntity(props);
   });
   it('Should create a UserEntity', () => {
-    expect(SUT.props.name).toEqual(props.name);
-    expect(SUT.props.email).toEqual(props.email);
-    expect(SUT.props.password).toEqual(props.password);
-    expect(SUT.props.createdAt).toBeInstanceOf(Date);
+    expect(SUT.name).toEqual(props.name);
+    expect(SUT.email).toEqual(props.email);
+    expect(SUT.password).toEqual(props.password);
+    expect(SUT.createdAt).toBeInstanceOf(Date);
+  });
+  it('Should get name of UserEntity', () => {
+    expect(SUT.name).toBeDefined();
+    expect(SUT.name).toEqual(props.name);
+    expect(typeof SUT.name).toBe('string');
+  });
+  it('Should get email of UserEntity', () => {
+    expect(SUT.email).toBeDefined();
+    expect(SUT.email).toEqual(props.email);
+    expect(typeof SUT.email).toBe('string');
+  });
+  it('Should get password of UserEntity', () => {
+    expect(SUT.password).toBeDefined();
+    expect(SUT.password).toEqual(props.password);
+    expect(typeof SUT.password).toBe('string');
+  });
+  it('Should get createdAt of UserEntity', () => {
+    expect(SUT.createdAt).toBeDefined();
+    expect(SUT.createdAt).toBeInstanceOf(Date);
   });
 });
