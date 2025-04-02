@@ -1,0 +1,33 @@
+import { Test, TestingModule } from '@nestjs/testing'
+import { EnvConfigService } from '../env-config.service'
+import { ConfigModule } from '@nestjs/config'
+import { join } from 'node:path'
+
+describe('EnvConfigService', () => {
+  let SUT: EnvConfigService
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      imports: [
+        ConfigModule.forRoot({
+          envFilePath: [join(process.cwd(), `.env.${process.env.NODE_ENV}`)],
+        }),
+      ],
+      providers: [EnvConfigService],
+    }).compile()
+
+    SUT = module.get<EnvConfigService>(EnvConfigService)
+  })
+
+  it('should be defined', () => {
+    expect(SUT).toBeDefined()
+  })
+
+  it('Should get port', () => {
+    expect(SUT.getAppPort()).toEqual(3010)
+  })
+
+  it('Should be get NODE_ENV', () => {
+    expect(SUT.getNodeEnv()).toEqual("test")
+  })
+})
