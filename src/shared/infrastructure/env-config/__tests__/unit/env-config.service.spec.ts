@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing'
-import { EnvConfigService } from '../env-config.service'
 import { ConfigModule } from '@nestjs/config'
 import { join } from 'node:path'
+import { EnvConfigService } from '../../env-config.service'
 
 describe('EnvConfigService', () => {
   let SUT: EnvConfigService
@@ -28,6 +28,6 @@ describe('EnvConfigService', () => {
   })
 
   it('Should be get NODE_ENV', () => {
-    expect(SUT.getNodeEnv()).toEqual("test")
+    expect(SUT.getNodeEnv()).toEqual('test')
   })
 })
