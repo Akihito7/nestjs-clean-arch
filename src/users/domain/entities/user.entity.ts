@@ -10,11 +10,11 @@ export type UserProps = {
 
 export class UserEntity extends BaseEntity<UserProps> {
   constructor(
-    protected readonly props: UserProps,
+    protected readonly _props: UserProps,
     protected readonly _id?: UUIDTypes,
   ) {
-    super(props, _id);
-    this.props.createdAt = props.createdAt ?? new Date();
+    super(_props, _id);
+    this._props.createdAt = _props.createdAt ?? new Date();
   }
 
   get name() {
