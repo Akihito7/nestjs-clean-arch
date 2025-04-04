@@ -3,7 +3,7 @@ export type FieldsErrors = {
 }
 
 export interface ValidatorFieldsInterface<T> {
-  errors: FieldsErrors;
-  validatedData: T;
+  errors: FieldsErrors | null;
+  validatedData: T | null;
   validate(data: T): boolean
 }
