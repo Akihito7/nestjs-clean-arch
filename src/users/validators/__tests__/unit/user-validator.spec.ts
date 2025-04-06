@@ -9,6 +9,13 @@ describe('UserValidator Unit Tests', () => {
     SUT = UserValidatorFactory.create();
   });
 
+  it('should validate successfully when props is valid', () => {
+    const userProps = userDateBuilder();
+    const isValid: boolean = SUT.validate(userProps);
+    expect(isValid).toBeTruthy();
+    expect(SUT.validatedData).toStrictEqual(new UserRules(userProps));
+  });
+
   describe('Name field validation', () => {
 
     it('should return all validation errors when props are empty', () => {
@@ -46,18 +53,57 @@ describe('UserValidator Unit Tests', () => {
 
     it('should return error when name exceeds 255 characters', () => {
       const userProps = { ...userDateBuilder(), name: 'a'.repeat(256) };
-      const isValid : boolean = SUT.validate(userProps);
+      const isValid: boolean = SUT.validate(userProps);
       expect(isValid).toBeFalsy();
       expect(SUT.errors).toStrictEqual({
         name: ['name must be shorter than or equal to 255 characters']
       });
     });
-
-    it('should validate successfully when name is valid', () => {
-      const userProps = userDateBuilder();
-      const isValid : boolean = SUT.validate(userProps);
-      expect(isValid).toBeTruthy();
-      expect(SUT.validatedData).toStrictEqual(new UserRules(userProps));
-    });
   });
+
+  describe('Email field validation', () => {
+    it('should return all validation errors when props are empty', () => {
+      const isValid: boolean = SUT.validate({} as UserProps);
+      expect(isValid).toBeFalsy();
+      expect(SUT.errors!['email']).toStrictEqual([
+        'email must be an email',
+        'email should not be empty',
+        'email must be shorter than or equal to 255 characters'
+      ])
+    });
+
+    it('should return error when email is an empty string', () => {
+      const userProps = { ...userDateBuilder(), email: "" };
+      const isValid: boolean = SUT.validate(userProps);
+      expect(isValid).toBeFalsy();
+      expect(SUT.errors).toStrictEqual(
+        { email: ['email must be an email', 'email should not be empty'] }
+      );
+    });
+
+    it('should return errors when email is not a string', () => {
+      const userProps = { ...userDateBuilder(), email: 123 as any };
+      const isValid: boolean = SUT.validate(userProps);
+      expect(isValid).toBeFalsy();
+      expect(SUT.errors).toStrictEqual({
+        email: [
+          'email must be an email',
+          'email must be shorter than or equal to 255 characters'
+        ]
+      });
+    });
+
+    it('should return error when email exceeds 255 characters', () => {
+      const userProps = { ...userDateBuilder(), email: 'a'.repeat(256) };
+      const isValid: boolean = SUT.validate(userProps);
+      expect(isValid).toBeFalsy();
+      expect(SUT.errors).toStrictEqual({
+        email: [
+          'email must be an email',
+          'email must be shorter than or equal to 255 characters'
+        ]
+      });
+    });
+
+  })
 });
