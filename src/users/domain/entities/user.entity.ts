@@ -1,4 +1,5 @@
 import { BaseEntity } from '@/shared/domain/entities/base-entity';
+import { EntityValidationError } from '@/shared/domain/validation-error';
 import { UserValidatorFactory } from '@/users/validators/user-validator';
 import { UUIDTypes } from 'uuid';
 
@@ -53,8 +54,11 @@ export class UserEntity extends BaseEntity<UserProps> {
     this._props.password = password;
   }
 
-  static validateProps(userProps: UserProps): boolean {
+  static validateProps(userProps: UserProps): void {
     const validator = UserValidatorFactory.create();
-    return validator.validate(userProps)
+    const isValid = validator.validate(userProps);
+    if (!isValid && validator.errors) {
+      throw new EntityValidationError(validator.errors)
+    }
   }
 }
