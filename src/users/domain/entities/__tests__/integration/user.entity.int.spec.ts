@@ -4,6 +4,13 @@ import { EntityValidationError } from "@/shared/errors/validation-error"
 
 describe('UserEntity Integration Tests', () => {
   describe('Constructor Method', () => {
+    describe('User Valid', () => {
+      it('should create a valid user without throwing', () => {
+        const userProps = userDateBuilder();
+        expect(() => new UserEntity(userProps)).not.toThrow();
+      });
+    })
+
     describe('Name field', () => {
       it('should throw EntityValidationError when name is empty', () => {
         const props = {
@@ -108,5 +115,67 @@ describe('UserEntity Integration Tests', () => {
         expect(() => new UserEntity(props)).toThrow(EntityValidationError)
       })
     })
+
+
+  })
+
+  describe('Update Fields', () => {
+    it('should update the name successfully', () => {
+      const userProps = userDateBuilder();
+      const user = new UserEntity(userProps);
+      expect(() => user.update('linus')).not.toThrow();
+      expect(user.props.name).toStrictEqual('linus');
+    });
+
+    it('should throw error when updating name with empty string', () => {
+      const userProps = userDateBuilder();
+      const user = new UserEntity(userProps);
+      expect(() => user.update('' as any)).toThrow(EntityValidationError);
+    });
+
+    it('should throw error when updating name with string longer than 255 characters', () => {
+      const userProps = userDateBuilder();
+      const user = new UserEntity(userProps);
+      expect(() => user.update('a'.repeat(256) as any)).toThrow(EntityValidationError);
+    });
+
+    it('should throw error when updating name with null', () => {
+      const userProps = userDateBuilder();
+      const user = new UserEntity(userProps);
+      expect(() => user.update(null as any)).toThrow(EntityValidationError);
+    });
+
+    it('should throw error when updating name with number', () => {
+      const userProps = userDateBuilder();
+      const user = new UserEntity(userProps);
+      expect(() => user.update(123 as any)).toThrow(EntityValidationError);
+    });
+  });
+
+  describe('Update Password', () => {
+    it('should update the password successfully', () => {
+      const userProps = userDateBuilder();
+      const user = new UserEntity(userProps);
+      expect(() => user.updatePassword('admin123')).not.toThrow();
+      expect(user.password).toStrictEqual('admin123');
+    });
+
+    it('should throw error when updating password with empty string', () => {
+      const userProps = userDateBuilder();
+      const user = new UserEntity(userProps);
+      expect(() => user.updatePassword('' as any)).toThrow(EntityValidationError);
+    });
+
+    it('should throw error when updating password with string longer than 255 characters', () => {
+      const userProps = userDateBuilder();
+      const user = new UserEntity(userProps);
+      expect(() => user.updatePassword('a'.repeat(256) as any)).toThrow(EntityValidationError);
+    });
+
+    it('should throw error when updating password with null', () => {
+      const userProps = userDateBuilder();
+      const user = new UserEntity(userProps);
+      expect(() => user.updatePassword(null as any)).toThrow(EntityValidationError);
+    });
   })
 })
