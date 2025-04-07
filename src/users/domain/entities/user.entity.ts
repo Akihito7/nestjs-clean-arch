@@ -1,5 +1,5 @@
 import { BaseEntity } from '@/shared/domain/entities/base-entity';
-import { EntityValidationError } from '@/shared/domain/validation-error';
+import { EntityValidationError } from '@/shared/errors/validation-error';
 import { UserValidatorFactory } from '@/users/validators/user-validator';
 import { UUIDTypes } from 'uuid';
 
