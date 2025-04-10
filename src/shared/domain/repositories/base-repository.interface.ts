@@ -1,6 +1,6 @@
 import { BaseEntity } from "../entities/base-entity";
 
-export interface BaseRepository<T extends BaseEntity<T>> {
+export interface BaseRepository<T extends BaseEntity> {
   insert(entity: T): Promise<void>
   findById(id: string): Promise<T | null>
   findAll(): Promise<T[]>

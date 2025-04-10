@@ -1,9 +1,9 @@
 import { UUIDTypes, v4 as uuidv4, validate as uuidValidate } from 'uuid';
 
-export abstract class BaseEntity<T> {
+export abstract class BaseEntity<T = any> {
   constructor(
-    protected readonly _props: T,
-    protected readonly _id?: UUIDTypes,
+    protected _props: T,
+    protected _id?: UUIDTypes,
   ) {
     if (_id && !uuidValidate(_id)) {
       throw new Error("Invalid UUID");
