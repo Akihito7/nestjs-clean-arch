@@ -1,6 +1,7 @@
 import { NotFoundError } from "@/shared/errors/not-found-error";
 import { BaseEntity } from "../entities/base-entity";
 import { BaseRepository } from "./base-repository.interface";
+import { UUIDTypes } from "uuid";
 
 interface GetItemResponse<T> {
   item: T,
@@ -30,14 +31,15 @@ export abstract class InMemoryRepository<T extends BaseEntity> implements BaseRe
     this.items[index] = entity
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: UUIDTypes): Promise<void> {
+    this.getItem(id);
     this.items = this.items.filter(item => item.id !== id);
   }
 
-  protected getItem(id: string): GetItemResponse<T> {
+  protected getItem(id: UUIDTypes): GetItemResponse<T> {
     const item = this.items.find(item => item.id === id)
     if (!item) {
-      throw new NotFoundError(`Item com id ${id} não encontrado.`)
+      throw new NotFoundError(`Entity Not Found`)
     }
     const index = this.items.findIndex(item => item.id === id);
     return {
