@@ -1,10 +1,10 @@
-import { InMemoryRepository } from "@/shared/domain/repositories/in-memory-repository";
+import { SearchableInMemoryRepository } from "@/shared/domain/repositories/searchable-in-memory-repository";
 import { ConflictError } from "@/shared/errors/conflit-error";
 import { UserEntity } from "@/users/domain/entities/user.entity";
 import { IUserRepository } from "@/users/domain/repositories/user.repository-interface";
 
 export class UserInMemoryRepository
-  extends InMemoryRepository<UserEntity>
+  extends SearchableInMemoryRepository<UserEntity, any, any>
   implements IUserRepository {
 
   async findByEmail(email: string): Promise<UserEntity> {
