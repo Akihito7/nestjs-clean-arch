@@ -19,13 +19,29 @@ export class SearchParams {
   protected _sortDir: SortDirection | null
   protected _filter: string | null
 
-  constructor(props: SearchParamsProps) {
-    this._page = props.page ?? 1
-    this._perPage = props.perPage ?? 15
-    this._sort = props.sort ?? null
-    this._sortDir = props.sortDir ?? null
-    this._filter = props.filter ?? null
+  constructor(props: SearchParamsProps = {}) {
+    const _page = typeof props.page === 'boolean'
+      ? props.page
+      : Number(props.page);
+    this._page = Number.isInteger(_page) && _page > 0 ? _page : 1;
+
+    const _perPage = typeof props.perPage === 'boolean'
+      ? props.perPage
+      : Number(props.perPage);
+    this._perPage = Number.isInteger(_perPage) && _perPage > 0 ? _perPage : 15;
+
+    this._sort = props.sort ?? null;
+
+    if (!this._sort) {
+      this._sortDir = null;
+    } else {
+      const dir = `${props.sortDir}`.toLowerCase();
+      this._sortDir = dir !== 'ASC' && dir !== 'DESC' ? 'DESC' : dir as SortDirection;
+    }
+
+    this._filter = props.filter ?? null;
   }
+
 
   get page(): number {
     return this._page;
