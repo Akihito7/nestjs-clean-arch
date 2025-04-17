@@ -20,26 +20,11 @@ export class SearchParams {
   protected _filter: string | null
 
   constructor(props: SearchParamsProps = {}) {
-    const _page = typeof props.page === 'boolean'
-      ? props.page
-      : Number(props.page);
-    this._page = Number.isInteger(_page) && _page > 0 ? _page : 1;
-
-    const _perPage = typeof props.perPage === 'boolean'
-      ? props.perPage
-      : Number(props.perPage);
-    this._perPage = Number.isInteger(_perPage) && _perPage > 0 ? _perPage : 15;
-
-    this._sort = props.sort ?? null;
-
-    if (!this._sort) {
-      this._sortDir = null;
-    } else {
-      const dir = `${props.sortDir}`.toLowerCase();
-      this._sortDir = dir !== 'ASC' && dir !== 'DESC' ? 'DESC' : dir as SortDirection;
-    }
-
-    this._filter = props.filter ?? null;
+    this.page = props.page ?? 1
+    this.perPage = props.perPage ?? 15
+    this.sort = props.sort ?? null;
+    this.sortDir = props.sortDir ?? null;
+    this.filter = props.filter ?? null;
   }
 
 
@@ -57,7 +42,11 @@ export class SearchParams {
   }
 
   private set sort(value: string | null) {
-    this._sort = value ? value : null
+    this._sort = value ? `${value}` : null
+  }
+
+  get sortDir(): SortDirection | null {
+    return this._sortDir
   }
 
   private set sortDir(value: SortDirection | null) {
@@ -65,7 +54,7 @@ export class SearchParams {
       this._sortDir = null;
       return
     }
-    const dir = `${value}`.toLocaleLowerCase()
+    const dir = `${value}`.toLocaleUpperCase()
     this._sortDir = dir !== 'ASC' && dir !== 'DESC' ? 'DESC' : dir
   }
 
@@ -74,7 +63,7 @@ export class SearchParams {
   }
 
   private set filter(value: string | null) {
-    this._filter = value ? value : null
+    this._filter = value ? `${value}` : null
   }
 
   get perPage() {
@@ -82,7 +71,7 @@ export class SearchParams {
   }
 
   private set perPage(value: number) {
-    const _perPage = Number(value);
+    const _perPage = typeof value === 'boolean' ? 15 : Number(value);
     this._perPage = Number.isInteger(_perPage) && _perPage > 0 ? _perPage : 15
   }
 }

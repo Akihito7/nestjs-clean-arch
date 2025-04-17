@@ -1,10 +1,13 @@
 import { SearchParams } from "../../searchable.interface"
 
 describe('Searchable Unit Tests', () => {
-  describe('SearchParams tests', () => {
-    it('Page prop', () => {
-      const sut = new SearchParams();
-      expect(sut.page).toBe(1)
+  describe('SearchParams', () => {
+    
+    describe('page', () => {
+      it('deve ter valor padrão igual a 1', () => {
+        const sut = new SearchParams();
+        expect(sut.page).toBe(1);
+      });
 
       const params = [
         { page: null as any, expected: 1 },
@@ -21,12 +24,16 @@ describe('Searchable Unit Tests', () => {
         { page: 2, expected: 2 },
       ];
 
-      params.forEach(p => { expect(new SearchParams({ page: p.page }).page).toBe(p.expected) })
-    })
+      it.each(params)('deve normalizar page: $page para $expected', ({ page, expected }) => {
+        expect(new SearchParams({ page }).page).toBe(expected);
+      });
+    });
 
-    it('PerPage', () => {
-      const sut = new SearchParams();
-      expect(sut.perPage).toBe(15);
+    describe('perPage', () => {
+      it('deve ter valor padrão igual a 15', () => {
+        const sut = new SearchParams();
+        expect(sut.perPage).toBe(15);
+      });
 
       const params = [
         { perPage: null as any, expected: 15 },
@@ -42,11 +49,96 @@ describe('Searchable Unit Tests', () => {
         { perPage: 15, expected: 15 },
         { perPage: 20, expected: 20 },
         { perPage: 25, expected: 25 },
-      ]
+      ];
 
+      it.each(params)('deve normalizar perPage: $perPage para $expected', ({ perPage, expected }) => {
+        expect(new SearchParams({ perPage }).perPage).toBe(expected);
+      });
+    });
 
-      params.forEach(p => { expect(new SearchParams({ perPage: p.perPage }).perPage).toBe(p.expected) })
+    describe('sort', () => {
+      it('deve ter valor padrão igual a null', () => {
+        const sut = new SearchParams();
+        expect(sut.sort).toBeNull();
+      });
 
-    })
-  })
-})
+      const params = [
+        { sort: null as any, expected: null },
+        { sort: undefined as any, expected: null },
+        { sort: '' as any, expected: null },
+        { sort: 'test' as any, expected: 'test' },
+        { sort: 0, expected: null },
+        { sort: -1, expected: '-1' },
+        { sort: 5.5, expected: '5.5' },
+        { sort: true, expected: 'true' },
+        { sort: false, expected: null },
+        { sort: {}, expected: '[object Object]' },
+        { sort: 15, expected: '15' },
+        { sort: 20, expected: '20' },
+        { sort: 25, expected: '25' },
+      ];
+
+      it.each(params)('deve normalizar sort: $sort para $expected', ({ sort, expected }) => {
+        expect(new SearchParams({ sort }).sort).toBe(expected);
+      });
+    });
+
+    describe('sortDir', () => {
+      it('deve ser null quando sort for falsy', () => {
+        expect(new SearchParams().sortDir).toBeNull();
+        expect(new SearchParams({ sort: null }).sortDir).toBeNull();
+        expect(new SearchParams({ sort: undefined }).sortDir).toBeNull();
+        expect(new SearchParams({ sort: '' }).sortDir).toBeNull();
+      });
+
+      const params = [
+        { sortDir: null as any, expected: 'DESC' },
+        { sortDir: undefined as any, expected: 'DESC' },
+        { sortDir: '' as any, expected: 'DESC' },
+        { sortDir: 'test' as any, expected: 'DESC' },
+        { sortDir: 0, expected: 'DESC' },
+        { sortDir: -1, expected: 'DESC' },
+        { sortDir: 5.5, expected: 'DESC' },
+        { sortDir: true, expected: 'DESC' },
+        { sortDir: false, expected: 'DESC' },
+        { sortDir: 'ASC', expected: 'ASC' },
+        { sortDir: 'DESC', expected: 'DESC' },
+      ];
+
+      it.each(params)('deve normalizar sortDir: $sortDir para $expected quando sort é definido', ({ sortDir, expected }) => {
+        expect(new SearchParams({ sort: 'any', sortDir }).sortDir).toBe(expected);
+      });
+    });
+
+    describe('filter', () => {
+      it('deve retornar null por padrão', () => {
+        const sut = new SearchParams();
+        expect(sut.filter).toBeNull();
+      });
+
+      it('deve retornar valor passado se for válido', () => {
+        const sut = new SearchParams({ filter: 'name' });
+        expect(sut.filter).toBe('name');
+      });
+
+      const params = [
+        { filter: null as any, expected: null },
+        { filter: undefined as any, expected: null },
+        { filter: '' as any, expected: null },
+        { filter: 'test' as any, expected: 'test' },
+        { filter: 0, expected: null },
+        { filter: -1, expected: '-1' },
+        { filter: 5.5, expected: '5.5' },
+        { filter: true, expected: 'true' },
+        { filter: false, expected: null },
+        { filter: 'ASC', expected: 'ASC' },
+        { filter: 'DESC', expected: 'DESC' },
+      ];
+
+      it.each(params)('deve normalizar filter: $filter para $expected', ({ filter, expected }) => {
+        expect(new SearchParams({ filter }).filter).toBe(expected);
+      });
+    });
+
+  });
+});
