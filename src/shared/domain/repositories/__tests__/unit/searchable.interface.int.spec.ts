@@ -1,8 +1,8 @@
-import { SearchParams } from "../../searchable.interface"
+import { SearchParams, SearchResult } from "../../searchable.interface"
 
 describe('Searchable Unit Tests', () => {
   describe('SearchParams', () => {
-    
+
     describe('page', () => {
       it('deve ter valor padrão igual a 1', () => {
         const sut = new SearchParams();
@@ -140,5 +140,78 @@ describe('Searchable Unit Tests', () => {
       });
     });
 
+  });
+
+  describe('SearchResult', () => {
+
+    it('should initialize SearchResult and compute lastPage correctly', () => {
+      let sut = new SearchResult({
+        currentPage: 1,
+        filter: null,
+        items: ['test', 'test2', 'test3', 'test4'] as any,
+        perPage: 2,
+        sort: null,
+        sortDir: null,
+        total: 4
+      });
+
+      expect(sut.toJSON(true)).toStrictEqual({
+        currentPage: 1,
+        filter: null,
+        items: ['test', 'test2', 'test3', 'test4'],
+        perPage: 2,
+        sort: null,
+        sortDir: null,
+        lastPage: 2,
+        total: 4
+      });
+
+      sut = new SearchResult({
+        currentPage: 1,
+        filter: null,
+        items: ['test', 'test2', 'test3', 'test4'] as any,
+        perPage: 2,
+        sort: 'name',
+        sortDir: 'ASC',
+        total: 4
+      });
+
+      expect(sut.toJSON(true)).toStrictEqual({
+        currentPage: 1,
+        filter: null,
+        items: ['test', 'test2', 'test3', 'test4'],
+        perPage: 2,
+        sort: 'name',
+        sortDir: 'ASC',
+        total: 4,
+        lastPage: 2,
+      });
+    });
+
+    it('should ensure lastPage is not a decimal number', () => {
+      let sut = new SearchResult({
+        currentPage: 1,
+        filter: null,
+        items: ['test', 'test2', 'test3', 'test4'] as any,
+        perPage: 6,
+        sort: null,
+        sortDir: null,
+        total: 4
+      });
+
+      expect(sut.lastPage).toBe(1);
+
+      sut = new SearchResult({
+        currentPage: 1,
+        filter: null,
+        items: ['test', 'test2', 'test3', 'test4'] as any,
+        perPage: 10,
+        sort: null,
+        sortDir: null,
+        total: 54
+      });
+
+      expect(sut.lastPage).toBe(6);
+    });
   });
 });

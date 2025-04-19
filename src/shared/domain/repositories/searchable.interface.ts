@@ -105,9 +105,10 @@ export class SearchResult<E extends BaseEntity, Filter = string> {
     this.currentPage = props.currentPage;
     this.perPage = props.perPage;
     this.lastPage = Math.ceil(props.total / props.perPage)
+    this.total = props.total;
   }
 
-  toJSON(forceEntity: boolean) {
+  toJSON(forceEntity: boolean = false) {
     return {
       items: forceEntity ? this.items : this.items.map(item => item.toJson()),
       sort: this.sort,
@@ -116,6 +117,7 @@ export class SearchResult<E extends BaseEntity, Filter = string> {
       currentPage: this.currentPage,
       perPage: this.perPage,
       lastPage: this.lastPage,
+      total: this.total,
     }
   }
 }
