@@ -77,12 +77,56 @@ export class SearchParams {
 }
 
 
+interface SearchResultProps<E extends BaseEntity, Filter = string> {
+  items: E[];
+  total: number;
+  sort: string | null;
+  sortDir: SortDirection | null
+  filter: Filter | null;
+  currentPage: number;
+  perPage: number;
+};
+
+export class SearchResult<E extends BaseEntity, Filter = string> {
+  readonly items: E[] = [];
+  readonly total: number
+  readonly sort: string | null;
+  readonly sortDir: SortDirection | null
+  readonly filter: Filter | null;
+  readonly currentPage: number;
+  readonly perPage: number;
+  readonly lastPage: number;
+
+  constructor(props: SearchResultProps<E, Filter>) {
+    this.items = props.items;
+    this.sort = props.sort;
+    this.sortDir = props.sortDir;
+    this.filter = props.filter;
+    this.currentPage = props.currentPage;
+    this.perPage = props.perPage;
+    this.lastPage = Math.ceil(props.total / props.perPage)
+  }
+
+  toJSON(forceEntity: boolean) {
+    return {
+      items: forceEntity ? this.items : this.items.map(item => item.toJson()),
+      sort: this.sort,
+      sortDir: this.sortDir,
+      filter: this.filter,
+      currentPage: this.currentPage,
+      perPage: this.perPage,
+      lastPage: this.lastPage,
+    }
+  }
+}
+
+
 export interface ISearchableRepository
   <
     E extends BaseEntity,
     Params,
-    SearchOutput
+    Result
   >
   extends BaseRepository<E> {
-  search(props: Params): Promise<SearchOutput>
+  search(props: Params): Promise<Result>
 }
