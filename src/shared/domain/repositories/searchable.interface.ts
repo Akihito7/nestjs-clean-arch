@@ -4,7 +4,7 @@ import { BaseRepository } from "./base-repository.interface";
 
 type SortDirection = 'ASC' | 'DESC'
 
-interface SearchParamsProps<Filter = string> {
+interface SearchParamsProps<Filter> {
   page?: number;
   perPage?: number;
   sort?: string | null;
@@ -12,14 +12,14 @@ interface SearchParamsProps<Filter = string> {
   filter?: Filter | null;
 }
 
-export class SearchParams {
+export class SearchParams<Filter = string> {
   protected _page: number
   protected _perPage: number
   protected _sort: string | null
   protected _sortDir: SortDirection | null
-  protected _filter: string | null
+  protected _filter: Filter | null
 
-  constructor(props: SearchParamsProps = {}) {
+  constructor(props: SearchParamsProps<Filter> = {}) {
     this.page = props.page ?? 1
     this.perPage = props.perPage ?? 15
     this.sort = props.sort ?? null;
@@ -62,8 +62,8 @@ export class SearchParams {
     return this._filter;
   }
 
-  private set filter(value: string | null) {
-    this._filter = value ? `${value}` : null
+  private set filter(value: Filter | null) {
+    this._filter = value ? `${value}` as Filter : null
   }
 
   get perPage() {
@@ -126,8 +126,9 @@ export class SearchResult<E extends BaseEntity, Filter = string> {
 export interface ISearchableRepository
   <
     E extends BaseEntity,
-    Params,
-    Result
+    Filter = string,
+    Params = SearchParams<Filter>,
+    Result = SearchResult<E, Filter>
   >
   extends BaseRepository<E> {
   search(props: Params): Promise<Result>
