@@ -4,12 +4,10 @@ import { ISearchableRepository, SearchParams, SearchResult } from "./searchable.
 
 export abstract class SearchableInMemoryRepository
   <
-    E extends BaseEntity,
-    SearchInput,
-    SearchOutput
+    E extends BaseEntity
   >
   extends InMemoryRepository<E>
-  implements ISearchableRepository<E, SearchInput, SearchOutput> {
+  implements ISearchableRepository<E, any, any> {
   sortableFields: string[];
   async search(props: any): Promise<any> {
     const itemsFiltered = await this.applyFilter(this.items, props.filter)
