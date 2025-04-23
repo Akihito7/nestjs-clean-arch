@@ -67,6 +67,8 @@ export abstract class SearchableInMemoryRepository
     page: SearchParams['page'],
     perPage: SearchParams['perPage'],
   ): Promise<E[]> {
-    throw new Error()
+    const start = (page - 1) * perPage;
+    const limit = start + perPage;
+    return items.slice(start, limit)
   }
 }
