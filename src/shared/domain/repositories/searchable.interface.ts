@@ -131,5 +131,6 @@ export interface ISearchableRepository
     Result = SearchResult<E, Filter>
   >
   extends BaseRepository<E> {
+  sortableFields: string[]
   search(props: Params): Promise<Result>
 }
