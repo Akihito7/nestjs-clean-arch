@@ -2,7 +2,7 @@ import { BaseEntity } from "../entities/base-entity";
 import { BaseRepository } from "./base-repository.interface";
 
 
-type SortDirection = 'ASC' | 'DESC'
+export type SortDirection = 'ASC' | 'DESC'
 
 interface SearchParamsProps<Filter> {
   page?: number;
