@@ -1,6 +1,7 @@
 import { SearchableInMemoryRepository } from "@/shared/domain/repositories/searchable-in-memory-repository";
 import { SortDirection } from "@/shared/domain/repositories/searchable.interface";
 import { ConflictError } from "@/shared/errors/conflit-error";
+import { NotFoundError } from "@/shared/errors/not-found-error";
 import { UserEntity } from "@/users/domain/entities/user.entity";
 import { IUserRepository } from "@/users/domain/repositories/user.repository-interface";
 
@@ -20,7 +21,7 @@ export class UserInMemoryRepository
   async emailExists(email: string): Promise<void> {
     const user = this.items.find(user => user.email === email)
     if (user) {
-      throw new ConflictError(`Email ${email} exists.`);
+      throw new NotFoundError(`Email ${email} exists.`);
     }
   }
 
