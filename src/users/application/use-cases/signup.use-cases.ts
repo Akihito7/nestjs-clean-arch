@@ -1,6 +1,7 @@
 import { UserEntity } from "@/users/domain/entities/user.entity";
 import { IUserRepository } from "@/users/domain/repositories/user.repository-interface";
 import { BadRequestError } from "../errors/bad-request-error";
+import { IHashProvider } from "@/shared/application/providers/hash.provider";
 
 export namespace SignupUseCase {
   interface Input {
@@ -17,7 +18,10 @@ export namespace SignupUseCase {
   }
 
   export class UseCase {
-    constructor(private readonly userRepository: IUserRepository.Repository) { }
+    constructor(
+      private readonly userRepository: IUserRepository.Repository,
+      private readonly hashProvider: IHashProvider
+    ) { }
     async execute(input: Input): Promise<Output> {
       const { name, email, password } = input;
       if (!name || !email || !password) {
