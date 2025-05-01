@@ -3,6 +3,7 @@ import { IUserRepository } from "@/users/domain/repositories/user.repository-int
 import { BadRequestError } from "../errors/bad-request-error";
 import { IHashProvider } from "@/shared/application/providers/hash.provider";
 import { UUIDTypes } from "uuid";
+import { BaseUseCase } from "@/shared/application/use-cases/base-use-case";
 
 export namespace SignupUseCase {
   interface Input {
@@ -19,7 +20,7 @@ export namespace SignupUseCase {
     createdAt: Date;
   }
 
-  export class UseCase {
+  export class UseCase implements BaseUseCase<Input, Output> {
     constructor(
       private readonly userRepository: IUserRepository.Repository,
       private readonly hashProvider: IHashProvider

@@ -1,3 +1,4 @@
+import { BaseUseCase } from "@/shared/application/use-cases/base-use-case";
 import { NotFoundError } from "@/shared/errors/not-found-error";
 import { IUserRepository } from "@/users/domain/repositories/user.repository-interface";
 import { UUIDTypes } from "uuid";
@@ -16,9 +17,9 @@ export namespace GetUserUseCase {
     createdAt: Date;
   }
 
-  export class UseCase {
+  export class UseCase implements BaseUseCase<Input, Output> {
     constructor(private readonly userRepository: IUserRepository.Repository) { }
-    async execute({ id }: Input): Promise<Output | undefined> {
+    async execute({ id }: Input): Promise<Output> {
       const entity = await this.userRepository.findById(id as string);
       if (!entity) {
         throw new NotFoundError('Entity not found.')
