@@ -1,6 +1,6 @@
 import { UserEntity } from "@/users/domain/entities/user.entity";
 import { IUserRepository } from "@/users/domain/repositories/user.repository-interface";
-import { BadRequestError } from "../errors/bad-request-error";
+import { BadRequestError } from "../../../shared/application/errors/bad-request-error";
 import { IHashProvider } from "@/shared/application/providers/hash.provider";
 import { UUIDTypes } from "uuid";
 import { BaseUseCase } from "@/shared/application/use-cases/base-use-case";
