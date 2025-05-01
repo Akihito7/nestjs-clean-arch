@@ -28,7 +28,8 @@ export namespace SignupUseCase {
         throw new BadRequestError("Input data is not provided.")
       }
       await this.userRepository.emailExists(email);
-      const userEntity = new UserEntity({ email, name, password });
+      const hashPassword = await this.hashProvider.generateHash(password)
+      const userEntity = new UserEntity({ ...input, password: hashPassword });
       await this.userRepository.insert(userEntity)
       return userEntity.toJson()
     }
