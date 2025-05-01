@@ -1,5 +1,5 @@
 import { userDateBuilder } from "@/users/domain/testing/helpers/user-data-builder";
-import { SignupUseCase } from "../../signup.use-cases";
+import { SignupUseCase } from "../../signup.use-case";
 import { UserInMemoryRepository } from "@/users/infrastructure/database/in-memory/repositories/user-in-memory.repository";
 import { BcryptjsHashProvider } from "@/users/application/providers/bcryptjs-hash.provider";
 import { UserEntity } from "@/users/domain/entities/user.entity";

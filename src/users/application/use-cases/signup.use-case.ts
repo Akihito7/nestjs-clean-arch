@@ -2,7 +2,7 @@ import { UserEntity } from "@/users/domain/entities/user.entity";
 import { IUserRepository } from "@/users/domain/repositories/user.repository-interface";
 import { BadRequestError } from "../errors/bad-request-error";
 import { IHashProvider } from "@/shared/application/providers/hash.provider";
-import { UUIDTypes, v4 as uuidv4 } from "uuid";
+import { UUIDTypes } from "uuid";
 
 export namespace SignupUseCase {
   interface Input {
