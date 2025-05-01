@@ -8,7 +8,7 @@ export abstract class BaseEntity<T = any> {
     if (_id && !uuidValidate(_id)) {
       throw new Error("Invalid UUID");
     }
-    this._id = _id ?? uuidv4();
+    this._id = _id ? _id : uuidv4();
     this._props = _props;
   }
 

@@ -27,7 +27,6 @@ describe("BaseEntity Unit Tests", () => {
       prop2: 1234,
     };
     const stub = new StubEntity(props);
-
     expect(stub.id).toBeDefined();
     expect(uuidValidate(stub.id)).toBeTruthy();
   });

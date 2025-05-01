@@ -12,8 +12,8 @@ export type UserProps = {
 
 export class UserEntity extends BaseEntity<UserProps> {
   constructor(
-    protected readonly _props: UserProps,
-    protected readonly _id?: UUIDTypes,
+    _props: UserProps,
+    _id?: UUIDTypes,
   ) {
     UserEntity.validateProps(_props)
     super(_props, _id);
@@ -62,3 +62,9 @@ export class UserEntity extends BaseEntity<UserProps> {
     }
   }
 }
+
+// Removi o 'protected' antes dos parâmetros do construtor porque, ao utilizá-lo, ele cria propriedades diretamente na classe,
+// o que fazia com que a propriedade 'id' da classe BaseEntity fosse sobrescrita, resultando em 'undefined'.
+// Dessa forma, ao deixar os parâmetros apenas como parâmetros de entrada do construtor, evitamos a criação de uma nova
+// propriedade 'id' e garantimos que a classe BaseEntity defina corretamente o valor do 'id'.
+
