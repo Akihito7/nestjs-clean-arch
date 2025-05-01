@@ -1,3 +1,4 @@
+import { NotFoundError } from "@/shared/errors/not-found-error";
 import { IUserRepository } from "@/users/domain/repositories/user.repository-interface";
 import { UUIDTypes } from "uuid";
 
@@ -19,7 +20,10 @@ export namespace GetUserUseCase {
     constructor(private readonly userRepository: IUserRepository.Repository) { }
     async execute({ id }: Input): Promise<Output | undefined> {
       const entity = await this.userRepository.findById(id as string);
-      return entity?.toJson()
+      if (!entity) {
+        throw new NotFoundError('Entity not found.')
+      }
+      return entity.toJson()
     }
   }
 }
