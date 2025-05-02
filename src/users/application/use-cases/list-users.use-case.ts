@@ -7,23 +7,26 @@ import { IUserRepository } from "@/users/domain/repositories/user.repository-int
 import { IUserOutput, UserOutputMapper } from "../dtos/user-output";
 
 
-type Input = PaginationInput
 
-type Output = PaginationOutput<IUserOutput>
+export namespace ListUsers {
+  export type Input = PaginationInput
 
-export class ListUsers implements BaseUseCase<Input, Output> {
-  
-  constructor(private readonly userRepository: IUserRepository.Repository) { }
+  export type Output = PaginationOutput<IUserOutput>
 
-  async execute(input: Input): Promise<Output> {
-    const params = new SearchParams(input)
-    const searchResult = await this.userRepository.search(params)
-    return this.toOutput(searchResult);
+  export class UseCase implements BaseUseCase<Input, Output> {
+
+    constructor(private readonly userRepository: IUserRepository.Repository) { }
+
+    async execute(input: Input): Promise<Output> {
+      const params = new SearchParams(input)
+      const searchResult = await this.userRepository.search(params)
+      return this.toOutput(searchResult);
+    }
+
+    private toOutput(searchResult: SearchResult<UserEntity>): Output {
+      const items = searchResult.items.map(user => UserOutputMapper.toOutput(user));
+      return PaginationOutputMapper.toOutput(items, searchResult)
+    }
   }
-
-  private toOutput(searchResult: SearchResult<UserEntity>): Output {
-    const items = searchResult.items.map(user => UserOutputMapper.toOutput(user));
-    return PaginationOutputMapper.toOutput(items, searchResult)
-  }
-
 }
+
