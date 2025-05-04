@@ -15,11 +15,12 @@ export namespace DeleteUser {
 
   export class UseCase implements BaseUseCase<Input, Output> {
     constructor(private readonly userRepository: IUserRepository.Repository) { }
+
     async execute(input: Input): Promise<Output> {
-      
+
       const { id } = input;
 
-      if (!id) throw new BadRequestError('Input is not provided');
+      if (!id) throw new BadRequestError('Id is not provided');
 
       await this.userRepository.delete(id);
     }
