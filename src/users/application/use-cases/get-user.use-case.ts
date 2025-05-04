@@ -2,6 +2,7 @@ import { BaseUseCase } from "@/shared/application/use-cases/base-use-case";
 import { NotFoundError } from "@/shared/errors/not-found-error";
 import { IUserRepository } from "@/users/domain/repositories/user.repository-interface";
 import { UUIDTypes } from "uuid";
+import { UserOutputMapper } from "../dtos/user-output";
 
 
 export namespace GetUserUseCase {
@@ -24,7 +25,7 @@ export namespace GetUserUseCase {
       if (!entity) {
         throw new NotFoundError('Entity not found.')
       }
-      return entity.toJson()
+      return UserOutputMapper.toOutput(entity)
     }
   }
 }

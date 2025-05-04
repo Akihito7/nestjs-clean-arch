@@ -4,6 +4,7 @@ import { BadRequestError } from "../../../shared/application/errors/bad-request-
 import { IHashProvider } from "@/shared/application/providers/hash.provider";
 import { UUIDTypes } from "uuid";
 import { BaseUseCase } from "@/shared/application/use-cases/base-use-case";
+import { UserOutputMapper } from "../dtos/user-output";
 
 export namespace SignupUseCase {
   interface Input {
@@ -26,15 +27,22 @@ export namespace SignupUseCase {
       private readonly hashProvider: IHashProvider
     ) { }
     async execute(input: Input): Promise<Output> {
+
       const { name, email, password } = input;
+
       if (!name || !email || !password) {
         throw new BadRequestError("Input data is not provided.")
       }
+      
       await this.userRepository.emailExists(email);
+
       const hashPassword = await this.hashProvider.generateHash(password)
+
       const userEntity = new UserEntity({ ...input, password: hashPassword });
+
       await this.userRepository.insert(userEntity)
-      return userEntity.toJson()
+
+      return UserOutputMapper.toOutput(userEntity)
     }
   }
 }

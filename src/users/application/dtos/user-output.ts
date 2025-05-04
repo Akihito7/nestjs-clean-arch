@@ -1,6 +1,8 @@
 import { UserEntity } from "@/users/domain/entities/user.entity";
+import { UUIDTypes } from "uuid";
 
 export interface IUserOutput {
+  id: UUIDTypes | undefined;
   name: string;
   email: string;
   password: string;
