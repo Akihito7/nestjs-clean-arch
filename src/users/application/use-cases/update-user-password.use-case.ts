@@ -23,17 +23,16 @@ export namespace UpdateUserPassword {
       private readonly hashProvider: IHashProvider
     ) { }
 
-    async execute(input: any): Promise<Output> {
-
+    async execute(input: Input): Promise<Output> {
       const { id, oldPassword, newPassword } = input;
 
-      if (!id || !newPassword || oldPassword) throw new BadRequestError('Input is not provided.');
+      if (!id || !newPassword || !oldPassword) throw new BadRequestError('Old password and new password is required');
 
       const userEntity = await this.userRepository.findById(id.toString());
 
-      if (!userEntity) throw new NotFoundError(`User with id ${id} not found.`);
+      if (!userEntity) throw new NotFoundError(`Entity with this ${id} not found.`);
 
-      const oldPasswordIsMatch = this.hashProvider.compare(oldPassword, userEntity.password)
+      const oldPasswordIsMatch = await this.hashProvider.compare(oldPassword, userEntity.password)
 
       if (!oldPasswordIsMatch) throw new InvalidPasswordError('Old password does not match')
 
