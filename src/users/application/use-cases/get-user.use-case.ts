@@ -10,7 +10,7 @@ export namespace GetUserUseCase {
     id: UUIDTypes | string
   }
 
-  interface Output {
+  export interface Output {
     id: UUIDTypes | undefined;
     name: string;
     email: string;
