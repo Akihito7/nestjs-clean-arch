@@ -24,49 +24,49 @@ import { DeleteUser } from '../application/use-cases/delete-user.use-case';
       useClass: BcryptjsHashProvider
     },
     {
-      provide: 'SignupUseCase',
+      provide: SignupUseCase.UseCase,
       useFactory: (userRepository: IUserRepository.Repository, hashProvider: IHashProvider) => {
         return new SignupUseCase.UseCase(userRepository, hashProvider)
       },
       inject: ['UserRepository', 'HashProvider']
     },
     {
-      provide: 'SignlnUseCase',
+      provide: Signln.UseCase,
       useFactory: (userRepository: IUserRepository.Repository, hashProvider: IHashProvider) => {
         return new Signln.UseCase(userRepository, hashProvider)
       },
       inject: ['UserRepository', 'HashProvider']
     },
     {
-      provide: 'GetUserUseCase',
+      provide: GetUserUseCase.UseCase,
       useFactory: (userRepository: IUserRepository.Repository) => {
         return new GetUserUseCase.UseCase(userRepository)
       },
       inject: ['UserRepository']
     },
     {
-      provide: 'ListUsersUseCase',
+      provide: ListUsers.UseCase,
       useFactory: (userRepository: IUserRepository.Repository) => {
         return new ListUsers.UseCase(userRepository)
       },
       inject: ['UserRepository']
     },
     {
-      provide: 'UpdateUserUseCase',
+      provide: UpdateUser.UseCase,
       useFactory: (userRepository: IUserRepository.Repository) => {
         return new UpdateUser.UseCase(userRepository)
       },
       inject: ['UserRepository']
     },
     {
-      provide: 'UpdateUserPasswordUseCase',
+      provide: UpdateUserPassword.UseCase,
       useFactory: (userRepository: IUserRepository.Repository, hashProvider: IHashProvider) => {
         return new UpdateUserPassword.UseCase(userRepository, hashProvider)
       },
       inject: ['UserRepository', 'HashProvider']
     },
     {
-      provide: 'DeleteUserUseCase',
+      provide: DeleteUser.UseCase,
       useFactory: (userRepository: IUserRepository.Repository) => {
         return new DeleteUser.UseCase(userRepository)
       },
