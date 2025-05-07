@@ -7,7 +7,7 @@ import { BaseUseCase } from "@/shared/application/use-cases/base-use-case";
 import { UserOutputMapper } from "../dtos/user-output";
 
 export namespace SignupUseCase {
-  interface Input {
+  export interface Input {
     name: string;
     email: string;
     password: string;
