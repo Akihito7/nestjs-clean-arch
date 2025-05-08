@@ -3,6 +3,7 @@ import { SignupDTO } from '../../dtos/signup.dto';
 import { UsersController } from '../../users.controller';
 import { UUIDTypes } from 'uuid';
 import { SignlnDTO } from '../../dtos/signln.dto';
+import { UpdateUserDTO } from '../../dtos/update-user.dto';
 
 describe('UsersController unit tests', () => {
   let SUT: UsersController;
@@ -64,5 +65,28 @@ describe('UsersController unit tests', () => {
 
     expect(result).toMatchObject(output);
     expect(mockSignlnUseCase.execute).toHaveBeenCalledWith(input);
+  })
+
+
+
+  it('should update user', async () => {
+
+    const input: UpdateUserDTO = {
+      name: 'Jane Doe',
+    };
+
+    const mockUpdateUserUseCase = {
+      execute: jest.fn().mockReturnValue(Promise.resolve(output))
+    };
+
+    SUT['updateUserUseCase'] = mockUpdateUserUseCase as any
+
+    const result = await SUT.update(id.toString(), input);
+
+    expect(result).toMatchObject(output);
+    expect(mockUpdateUserUseCase.execute).toHaveBeenCalledWith({
+      id,
+      ...input
+    });
   })
 }); 
