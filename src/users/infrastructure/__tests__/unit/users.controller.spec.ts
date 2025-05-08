@@ -2,6 +2,7 @@ import { SignupUseCase } from '@/users/application/use-cases/signup.use-case';
 import { SignupDTO } from '../../dtos/signup.dto';
 import { UsersController } from '../../users.controller';
 import { UUIDTypes } from 'uuid';
+import { SignlnDTO } from '../../dtos/signln.dto';
 
 describe('UsersController unit tests', () => {
   let SUT: UsersController;
@@ -43,5 +44,25 @@ describe('UsersController unit tests', () => {
 
     expect(result).toMatchObject(output);
     expect(mockSignupUseCase.execute).toHaveBeenCalledWith(input);
+  })
+
+
+  it('should authenticate user', async () => {
+
+    const input: SignlnDTO = {
+      email: 'test@gmail.com',
+      password: '1234'
+    };
+
+    const mockSignlnUseCase = {
+      execute: jest.fn().mockReturnValue(Promise.resolve(output))
+    };
+
+    SUT['signlnUseCase'] = mockSignlnUseCase as any
+
+    const result = await SUT.signln(input);
+
+    expect(result).toMatchObject(output);
+    expect(mockSignlnUseCase.execute).toHaveBeenCalledWith(input);
   })
 }); 
