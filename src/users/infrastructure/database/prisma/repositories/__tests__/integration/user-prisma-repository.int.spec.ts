@@ -7,6 +7,7 @@ import { userDateBuilder } from "@/users/domain/testing/helpers/user-data-builde
 import { UserEntity } from "@/users/domain/entities/user.entity";
 import { NotFoundError } from "@/shared/errors/not-found-error";
 import { DatabaseModule } from "@/shared/infrastructure/database/database.module";
+import { BadRequestError } from "@/shared/application/errors/bad-request-error";
 
 describe('User prisma repository integration tests', () => {
 
@@ -46,6 +47,17 @@ describe('User prisma repository integration tests', () => {
   it('should throw error when user is not found', async () => {
     await expect(SUT.findById('fakeId')).rejects.toThrow(new NotFoundError(`User with this id fakeId not found.`));
   })
+
+  it('it should create user', async () => {
+    const userEntity = new UserEntity(userDateBuilder())
+    await SUT.insert(userEntity);
+
+    const user = await SUT.findById(userEntity.id!.toString());
+    expect(user).toBeTruthy();
+    expect(user.toJson()).toStrictEqual(userEntity.toJson());
+  })
+
+
 })
 
 
