@@ -4,12 +4,14 @@ import { IUserRepository } from "@/users/domain/repositories/user.repository-int
 import { UUIDTypes } from "uuid";
 import { UserModelMapper } from "../models/user-model-mapper";
 import { NotFoundError } from "@/shared/errors/not-found-error";
+import { SearchResult, SortDirection } from "@/shared/domain/repositories/searchable.interface";
+import { Prisma } from "@prisma/client";
 
 export class UserPrismaRepository implements IUserRepository.Repository {
 
   constructor(private readonly prismaService: PrismaService) { }
 
-  sortableFields: string[];
+  sortableFields: string[] = ['name', 'createdAt'];
 
   findByEmail(email: string): Promise<UserEntity> {
     throw new Error("Method not implemented.");
@@ -19,8 +21,39 @@ export class UserPrismaRepository implements IUserRepository.Repository {
     throw new Error("Method not implemented.");
   }
 
-  search(props: IUserRepository.SearchParams): Promise<IUserRepository.SearchResult> {
-    throw new Error("Method not implemented.");
+  async search(props: IUserRepository.SearchParams): Promise<IUserRepository.SearchResult> {
+
+    const { filter, page, perPage, sort, sortDir } = props;
+
+    const DEFAULT_SORT = 'createdAt';
+
+    const sortField = sort && this.sortableFields.includes(sort) ? sort : DEFAULT_SORT;
+    const sortDirection: SortDirection = sortDir ? sortDir : 'DESC';
+
+    const where: Prisma.UserWhereInput | undefined = filter
+      ? { name: { contains: filter, mode: 'insensitive' } }
+      : undefined;
+
+    const totalUsers = await this.prismaService.user.count({ where })
+
+    const modelUsers = await this.prismaService.user.findMany({
+      where,
+      orderBy: {
+        [sortField]: [sortDirection.toLowerCase()]
+      },
+      take: perPage && perPage > 0 ? perPage : 15,
+      skip: page && page > 0 ? (page - 1) * perPage : 0
+    })
+
+    return new SearchResult({
+      items: modelUsers.map(UserModelMapper.toEntity),
+      currentPage: page,
+      perPage,
+      total: totalUsers,
+      filter,
+      sort,
+      sortDir,
+    })
   }
 
   async insert(entity: UserEntity): Promise<void> {
