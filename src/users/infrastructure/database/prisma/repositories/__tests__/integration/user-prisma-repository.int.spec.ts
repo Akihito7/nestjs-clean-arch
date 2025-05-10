@@ -36,8 +36,8 @@ describe('User prisma repository integration tests', () => {
     const { id, ...rest } = new UserEntity(userDateBuilder()).toJson()
     await prismaClient.user.create({
       data: {
+        ...rest,
         id: id!.toString(),
-        ...rest
       }
     })
     const user = await SUT.findById(id!.toString());
@@ -170,7 +170,24 @@ describe('User prisma repository integration tests', () => {
     })
 
   })
+
+  it('should update user', async () => {
+    const userEntity = new UserEntity(userDateBuilder({ name: 'fakeName' }))
+    await prismaClient.user.create({
+      data: {
+        ...userEntity.toJson(),
+        id: userEntity.id!.toString(),
+      }
+    })
+    expect(userEntity.name).toStrictEqual('fakeName');
+    userEntity.update('otherName')
+    await SUT.update(userEntity);
+    const userUpdated = await prismaClient.user.findUnique({ where: { id: userEntity.id!.toString() } })
+    expect(userUpdated!.name).toStrictEqual('otherName');
+  })
 })
+
+
 
 
 // o que queremos testar aqui, e o user repository, mas e um teste de integracao
