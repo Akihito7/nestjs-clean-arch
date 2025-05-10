@@ -115,7 +115,59 @@ describe('User prisma repository integration tests', () => {
         expect(item).toBeInstanceOf(UserEntity)
       })
 
+      expect(result.items.length).toBe(15)
     });
+
+    it('should search using filter, sort and paginate', async () => {
+      const createdAt = new Date()
+      const entities: UserEntity[] = []
+      const arrange = ['test', 'a', 'TEST', 'b', 'TeSt']
+      arrange.forEach((element, index) => {
+        entities.push(
+          new UserEntity({
+            ...userDateBuilder({ name: element }),
+            createdAt: new Date(createdAt.getTime() + index),
+          }),
+        )
+      })
+
+      await prismaClient.user.createMany({
+        data: entities.map(item => ({
+          ...item.toJson(),
+          id: item.id!.toString()
+        })),
+      })
+
+      const searchOutputPage1 = await SUT.search(
+        new SearchParams({
+          page: 1,
+          perPage: 2,
+          sort: 'name',
+          sortDir: 'ASC',
+          filter: 'TEST',
+        }),
+      )
+      expect(searchOutputPage1.items[0].toJson()).toMatchObject(
+        entities[0].toJson(),
+      )
+      expect(searchOutputPage1.items[1].toJson()).toMatchObject(
+        entities[4].toJson(),
+      )
+
+      const searchOutputPage2 = await SUT.search(
+        new SearchParams({
+          page: 2,
+          perPage: 2,
+          sort: 'name',
+          sortDir: 'ASC',
+          filter: 'TEST',
+        }),
+      )
+
+      expect(searchOutputPage2.items[0].toJson()).toMatchObject(
+        entities[2].toJson(),
+      )
+    })
 
   })
 })
