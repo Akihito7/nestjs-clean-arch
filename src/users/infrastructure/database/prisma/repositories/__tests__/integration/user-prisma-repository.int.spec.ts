@@ -8,9 +8,9 @@ import { NotFoundError } from "@/shared/errors/not-found-error";
 import { DatabaseModule } from "@/shared/infrastructure/database/database.module";
 
 import { SearchParams, SearchResult } from "@/shared/domain/repositories/searchable.interface";
+import { ConflictError } from "@/shared/errors/conflit-error";
 
-describe('User prisma repository integration tests', () => {
-
+describe('UserPrismaRepository Integration Tests', () => {
   let prismaClient: PrismaClient;
   let module: TestingModule;
   let SUT: UserPrismaRepository;
@@ -32,7 +32,7 @@ describe('User prisma repository integration tests', () => {
     await prismaClient.$disconnect();
   });
 
-  it('Should find user by id', async () => {
+  it('should successfully find a user by ID', async () => {
     const { id, ...rest } = new UserEntity(userDateBuilder()).toJson()
     await prismaClient.user.create({
       data: {
@@ -44,11 +44,11 @@ describe('User prisma repository integration tests', () => {
     expect(user.toJson()).toStrictEqual({ id, ...rest })
   })
 
-  it('should throw error when user is not found', async () => {
+  it('should throw NotFoundError when user ID does not exist', async () => {
     await expect(SUT.findById('fakeId')).rejects.toThrow(new NotFoundError(`User with this id fakeId not found.`));
   })
 
-  it('it should create user', async () => {
+  it('should successfully create a new user', async () => {
     const userEntity = new UserEntity(userDateBuilder())
     await SUT.insert(userEntity);
 
@@ -57,7 +57,7 @@ describe('User prisma repository integration tests', () => {
     expect(user.toJson()).toStrictEqual(userEntity.toJson());
   })
 
-  it('should return all users', async () => {
+  it('should retrieve all users from the database', async () => {
     const usersEntity = Array.from({ length: 3 }).map(() => new UserEntity(userDateBuilder()))
     await prismaClient.user.createMany({
       data: usersEntity.map(user => ({
@@ -73,11 +73,8 @@ describe('User prisma repository integration tests', () => {
     expect(users).toHaveLength(3);
   })
 
-  describe('test method search', () => {
-
-
-    it('should return a list ordered by createdAt in descending order when no params are provided', async () => {
-
+  describe('search method tests', () => {
+    it('should return users ordered by createdAt in descending order when no search parameters are provided', async () => {
       const now = new Date();
 
       const usersEntity = Array.from({ length: 21 }).map((_, index) => {
@@ -118,7 +115,7 @@ describe('User prisma repository integration tests', () => {
       expect(result.items.length).toBe(15)
     });
 
-    it('should search using filter, sort and paginate', async () => {
+    it('should correctly apply filtering, sorting and pagination when searching users', async () => {
       const createdAt = new Date()
       const entities: UserEntity[] = []
       const arrange = ['test', 'a', 'TEST', 'b', 'TeSt']
@@ -168,10 +165,9 @@ describe('User prisma repository integration tests', () => {
         entities[2].toJson(),
       )
     })
-
   })
 
-  it('should update user', async () => {
+  it('should successfully update a user', async () => {
     const userEntity = new UserEntity(userDateBuilder({ name: 'fakeName' }))
     await prismaClient.user.create({
       data: {
@@ -186,7 +182,7 @@ describe('User prisma repository integration tests', () => {
     expect(userUpdated!.name).toStrictEqual('otherName');
   })
 
-  it('should delete a user', async () => {
+  it('should successfully delete a user', async () => {
     const userEntity = new UserEntity(userDateBuilder())
     await prismaClient.user.create({
       data: {
@@ -201,13 +197,40 @@ describe('User prisma repository integration tests', () => {
     expect(user).toBeNull()
   })
 
-  it('should throw error when user is not found when is going to delete', async () => {
+  it('should throw NotFoundError when attempting to delete a non-existent user', async () => {
     await expect(SUT.delete('fakeId')).rejects.toThrow(new NotFoundError('User with this id fakeId not found.'))
   })
+
+  it('should successfully find a user by email', async () => {
+    const userEntity = new UserEntity(userDateBuilder());
+    await prismaClient.user.create({
+      data: {
+        ...userEntity.toJson(),
+        id: userEntity.id!.toString(),
+      }
+    });
+
+    const user = await SUT.findByEmail(userEntity.email);
+    expect(user).toBeDefined();
+    expect(user.toJson()).toStrictEqual(userEntity.toJson())
+  })
+
+  it('should throw NotFoundError when searching for a non-existent email', async () => {
+    await expect(SUT.findByEmail('a@a.com')).rejects.toThrow(new NotFoundError('UserModel not found usind email a@a.com'))
+  });
+
+  it('should throw ConflictError when email already exists', async () => {
+    const userEntity = new UserEntity(userDateBuilder());
+    await prismaClient.user.create({
+      data: {
+        ...userEntity.toJson(),
+        id: userEntity.id!.toString(),
+      }
+    });
+    await expect(SUT.emailExists(userEntity.email)).rejects.toThrow(new ConflictError(`Email address already used`));
+  });
+
+  it('should not throw any error when checking for a non-existent email', async () => {
+    await expect(SUT.emailExists("a@a.com")).resolves.not.toThrow();
+  })
 })
-
-
-
-
-// o que queremos testar aqui, e o user repository, mas e um teste de integracao
-// entao queremos ter o prisma real aqui, e nao nada mockado
