@@ -185,6 +185,25 @@ describe('User prisma repository integration tests', () => {
     const userUpdated = await prismaClient.user.findUnique({ where: { id: userEntity.id!.toString() } })
     expect(userUpdated!.name).toStrictEqual('otherName');
   })
+
+  it('should delete a user', async () => {
+    const userEntity = new UserEntity(userDateBuilder())
+    await prismaClient.user.create({
+      data: {
+        ...userEntity.toJson(),
+        id: userEntity.id!.toString(),
+      }
+    });
+    expect(await prismaClient.user.count()).toBe(1);
+    await SUT.delete(userEntity.id!);
+    expect(await prismaClient.user.count()).toBe(0);
+    const user = await prismaClient.user.findUnique({ where: { id: userEntity.id!.toString() } });
+    expect(user).toBeNull()
+  })
+
+  it('should throw error when user is not found when is going to delete', async () => {
+    await expect(SUT.delete('fakeId')).rejects.toThrow(new NotFoundError('User with this id fakeId not found.'))
+  })
 })
 
 

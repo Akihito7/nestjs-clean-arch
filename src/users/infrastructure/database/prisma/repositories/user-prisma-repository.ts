@@ -91,8 +91,9 @@ export class UserPrismaRepository implements IUserRepository.Repository {
 
   }
 
-  delete(id: UUIDTypes): Promise<void> {
-    throw new Error("Method not implemented.");
+  async delete(id: UUIDTypes): Promise<void> {
+    await this._getById(id.toString());
+    await this.prismaService.user.delete({ where: { id: id.toString() } })
   }
 
   protected async _getById(id: string) {
