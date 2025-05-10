@@ -1,4 +1,3 @@
-import { PrismaService } from "@/shared/infrastructure/database/prisma/prisma.service";
 import { Test, TestingModule } from "@nestjs/testing";
 import { PrismaClient } from "@prisma/client";
 import { execSync } from "node:child_process";
@@ -7,7 +6,8 @@ import { userDateBuilder } from "@/users/domain/testing/helpers/user-data-builde
 import { UserEntity } from "@/users/domain/entities/user.entity";
 import { NotFoundError } from "@/shared/errors/not-found-error";
 import { DatabaseModule } from "@/shared/infrastructure/database/database.module";
-import { BadRequestError } from "@/shared/application/errors/bad-request-error";
+
+import { SearchParams, SearchResult } from "@/shared/domain/repositories/searchable.interface";
 
 describe('User prisma repository integration tests', () => {
 
@@ -71,6 +71,52 @@ describe('User prisma repository integration tests', () => {
       expect(found!.toJson()).toStrictEqual(expected.toJson());
     });
     expect(users).toHaveLength(3);
+  })
+
+  describe('test method search', () => {
+
+
+    it('should return a list ordered by createdAt in descending order when no params are provided', async () => {
+
+      const now = new Date();
+
+      const usersEntity = Array.from({ length: 21 }).map((_, index) => {
+        const createdAt = new Date(now);
+        createdAt.setMinutes(now.getMinutes() + index);
+        return new UserEntity({
+          ...userDateBuilder(),
+          name: `user${index}`,
+          createdAt,
+        });
+      });
+
+      await prismaClient.user.createMany(
+        {
+          data: usersEntity
+            .map(userEntity =>
+              ({ ...userEntity.toJson(), id: userEntity.id!.toString() })
+            )
+        });
+
+      const searchParams = new SearchParams({});
+
+      const result = await SUT.search(searchParams);
+
+      expect(result).toBeInstanceOf(SearchResult);
+
+      expect(result.total).toBe(21);
+      for (let i = 0; i < result.items.length - 1; i++) {
+        const currentDate = result.items[i].createdAt;
+        const nextDate = result.items[i + 1].createdAt;
+        expect(currentDate!.getTime()).toBeGreaterThanOrEqual(nextDate!.getTime());
+      }
+
+      result.items.forEach(item => {
+        expect(item).toBeInstanceOf(UserEntity)
+      })
+
+    });
+
   })
 })
 

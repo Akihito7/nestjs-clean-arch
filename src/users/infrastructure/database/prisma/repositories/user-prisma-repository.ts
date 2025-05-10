@@ -39,7 +39,7 @@ export class UserPrismaRepository implements IUserRepository.Repository {
     const modelUsers = await this.prismaService.user.findMany({
       where,
       orderBy: {
-        [sortField]: [sortDirection.toLowerCase()]
+        [sortField]: sortDirection.toLowerCase() as Prisma.SortOrder
       },
       take: perPage && perPage > 0 ? perPage : 15,
       skip: page && page > 0 ? (page - 1) * perPage : 0
