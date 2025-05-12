@@ -11,10 +11,10 @@ describe('UserEntity Unit Tests', () => {
   });
   it('Should create a UserEntity', () => {
     expect(UserEntity.validateProps).toHaveBeenCalled()
-    expect(SUT.name).toEqual(props.name);
-    expect(SUT.email).toEqual(props.email);
-    expect(SUT.password).toEqual(props.password);
-    expect(SUT.createdAt).toBeInstanceOf(Date);
+    expect(SUT.props.name).toEqual(props.name);
+    expect(SUT.props.email).toEqual(props.email);
+    expect(SUT.props.password).toEqual(props.password);
+    expect(SUT.props.createdAt).toBeInstanceOf(Date);
   });
   it('Should get name of UserEntity', () => {
     expect(SUT.name).toBeDefined();
