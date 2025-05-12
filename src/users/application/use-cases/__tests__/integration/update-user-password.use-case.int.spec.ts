@@ -7,12 +7,16 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { setupPrismaTest } from "@/shared/infrastructure/database/prisma/testing/setup-prisma-test";
 import { UserEntity } from "@/users/domain/entities/user.entity";
 import { UpdateUser } from "../../update-user.use-case";
+import { UpdateUserPassword } from "../../update-user-password.use-case";
+import { IHashProvider } from "@/shared/application/providers/hash.provider";
+import { BcryptjsHashProvider } from "@/users/application/providers/bcryptjs-hash.provider";
 
 
-describe('updateUser useCase integration test', () => {
+describe('updateUserPassword useCase integration test', () => {
   let prismaService: PrismaService;
   let userRepository: IUserRepository.Repository;
-  let SUT: UpdateUser.UseCase;
+  let hashProvider: IHashProvider;
+  let SUT: UpdateUserPassword.UseCase;
   let module: TestingModule;
 
   beforeAll(async () => {
@@ -20,10 +24,11 @@ describe('updateUser useCase integration test', () => {
     prismaService = new PrismaService();
     module = await Test.createTestingModule({ imports: [DatabaseModule.forTest(prismaService)] }).compile();
     userRepository = new UserPrismaRepository(prismaService);
+    hashProvider = new BcryptjsHashProvider();
   });
 
   beforeEach(async () => {
-    SUT = new UpdateUser.UseCase(userRepository);
+    SUT = new UpdateUserPassword.UseCase(userRepository, hashProvider);
     await prismaService.user.deleteMany();
   })
 
@@ -40,13 +45,17 @@ describe('updateUser useCase integration test', () => {
 
     const userEntity = new UserEntity(props);
 
-    await prismaService.user.create({ data: { ...userEntity.toJson(), id: userEntity.id!.toString() } });
+    await prismaService.user.create({
+      data: {
+        ...userEntity.toJson(),
+        id: userEntity.id!.toString(),
+        password: await hashProvider.generateHash(userEntity.password)
+      }
+    });
 
-    userEntity.update('other name');
+    const result = await SUT.execute({ oldPassword: '1234', newPassword: 'otherPassword', id: userEntity.id!.toString() });
 
-    const result = await SUT.execute({ name: 'other name', id: userEntity.id!.toString() });
-
-    expect(result.name).toStrictEqual('other name');
+    expect(await hashProvider.compare('otherPassword', result.password)).toBeTruthy();
 
   })
 
