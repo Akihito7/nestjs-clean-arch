@@ -1,21 +1,21 @@
+import { IHashProvider } from "@/shared/application/providers/hash.provider";
 import { PrismaService } from "@/shared/infrastructure/database/prisma/prisma.service";
+import { BcryptjsHashProvider } from "@/users/application/providers/bcryptjs-hash.provider";
 import { IUserRepository } from "@/users/domain/repositories/user.repository-interface"
 import { UserPrismaRepository } from "@/users/infrastructure/database/prisma/repositories/user-prisma-repository";
-import { SignupUseCase } from "../../signup.use-case";
 import { DatabaseModule } from "@/shared/infrastructure/database/database.module";
 import { Test, TestingModule } from '@nestjs/testing';
 import { setupPrismaTest } from "@/shared/infrastructure/database/prisma/testing/setup-prisma-test";
+import { Signln } from "../../signln.use-case";
 import { UserEntity } from "@/users/domain/entities/user.entity";
-import { UpdateUserPassword } from "../../update-user-password.use-case";
-import { IHashProvider } from "@/shared/application/providers/hash.provider";
-import { BcryptjsHashProvider } from "@/users/application/providers/bcryptjs-hash.provider";
+import { userDateBuilder } from "@/users/domain/testing/helpers/user-data-builder";
 
 
-describe('updateUserPassword useCase integration test', () => {
+describe('Signup use case integration test', () => {
   let prismaService: PrismaService;
   let userRepository: IUserRepository.Repository;
   let hashProvider: IHashProvider;
-  let SUT: UpdateUserPassword.UseCase;
+  let SUT: Signln.UseCase;
   let module: TestingModule;
 
   beforeAll(async () => {
@@ -27,7 +27,7 @@ describe('updateUserPassword useCase integration test', () => {
   });
 
   beforeEach(async () => {
-    SUT = new UpdateUserPassword.UseCase(userRepository, hashProvider);
+    SUT = new Signln.UseCase(userRepository, hashProvider);
     await prismaService.user.deleteMany();
   })
 
@@ -35,27 +35,26 @@ describe('updateUserPassword useCase integration test', () => {
     await module.close();
   })
 
-  it('should update a user successfully', async () => {
-    const props: SignupUseCase.Input = {
-      name: 'Jane Doe',
-      email: 'a@gmail.com',
-      password: '1234'
-    };
+  it('should create a user successfully', async () => {
 
-    const userEntity = new UserEntity(props);
+    const userEntity = new UserEntity(userDateBuilder({ email: 'a@gmail.com', password: '1234' }));
 
     await prismaService.user.create({
       data: {
         ...userEntity.toJson(),
-        id: userEntity.id!.toString(),
-        password: await hashProvider.generateHash(userEntity.password)
+        password: await hashProvider.generateHash(userEntity.password),
+        id: userEntity.id!.toString()
       }
     });
 
-    const result = await SUT.execute({ oldPassword: '1234', newPassword: 'otherPassword', id: userEntity.id!.toString() });
+    const props: Signln.Input = {
+      email: 'a@gmail.com',
+      password: '1234'
+    };
 
-    expect(await hashProvider.compare('otherPassword', result.password)).toBeTruthy();
-
+    const result = await SUT.execute(props);
+    expect(result.id).toBeDefined();
+    expect(result.createdAt).toBeInstanceOf(Date);
   })
 
 
