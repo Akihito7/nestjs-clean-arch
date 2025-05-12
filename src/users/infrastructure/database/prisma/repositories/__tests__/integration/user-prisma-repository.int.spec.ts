@@ -1,6 +1,5 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { PrismaClient } from "@prisma/client";
-import { execSync } from "node:child_process";
 import { UserPrismaRepository } from "../../user-prisma-repository";
 import { userDateBuilder } from "@/users/domain/testing/helpers/user-data-builder";
 import { UserEntity } from "@/users/domain/entities/user.entity";
@@ -9,6 +8,7 @@ import { DatabaseModule } from "@/shared/infrastructure/database/database.module
 
 import { SearchParams, SearchResult } from "@/shared/domain/repositories/searchable.interface";
 import { ConflictError } from "@/shared/errors/conflit-error";
+import { setupPrismaTest } from "@/shared/infrastructure/database/prisma/testing/setup-prisma-test";
 
 describe('UserPrismaRepository Integration Tests', () => {
   let prismaClient: PrismaClient;
@@ -16,7 +16,7 @@ describe('UserPrismaRepository Integration Tests', () => {
   let SUT: UserPrismaRepository;
 
   beforeAll(async () => {
-    execSync('npx dotenv-cli -e .env.test  -- npx prisma migrate deploy');
+    setupPrismaTest()
     prismaClient = new PrismaClient()
     module = await Test.createTestingModule({
       imports: [DatabaseModule.forTest(prismaClient as any)]

@@ -7,6 +7,7 @@ import { SignupUseCase } from "../../signup.use-case";
 import { DatabaseModule } from "@/shared/infrastructure/database/database.module";
 import { Test, TestingModule } from '@nestjs/testing';
 import { execSync } from "node:child_process";
+import { setupPrismaTest } from "@/shared/infrastructure/database/prisma/testing/setup-prisma-test";
 
 
 describe('Signup use case integration test', () => {
@@ -17,7 +18,7 @@ describe('Signup use case integration test', () => {
   let module: TestingModule;
 
   beforeAll(async () => {
-    execSync('npx dotenv-cli -e .env.test  -- npx prisma migrate deploy');
+    setupPrismaTest()
     prismaService = new PrismaService();
     module = await Test.createTestingModule({ imports: [DatabaseModule.forTest(prismaService)] }).compile();
     userRepository = new UserPrismaRepository(prismaService);
