@@ -6,15 +6,15 @@ import { UserPrismaRepository } from "@/users/infrastructure/database/prisma/rep
 import { SignupUseCase } from "../../signup.use-case";
 import { DatabaseModule } from "@/shared/infrastructure/database/database.module";
 import { Test, TestingModule } from '@nestjs/testing';
-import { execSync } from "node:child_process";
 import { setupPrismaTest } from "@/shared/infrastructure/database/prisma/testing/setup-prisma-test";
+import { UserEntity } from "@/users/domain/entities/user.entity";
+import { DeleteUser } from "../../delete-user.use-case";
 
 
-describe('Signup use case integration test', () => {
+describe('delete use case integration test', () => {
   let prismaService: PrismaService;
   let userRepository: IUserRepository.Repository;
-  let hashProvider: IHashProvider;
-  let SUT: SignupUseCase.UseCase;
+  let SUT: DeleteUser.UseCase;
   let module: TestingModule;
 
   beforeAll(async () => {
@@ -22,11 +22,10 @@ describe('Signup use case integration test', () => {
     prismaService = new PrismaService();
     module = await Test.createTestingModule({ imports: [DatabaseModule.forTest(prismaService)] }).compile();
     userRepository = new UserPrismaRepository(prismaService);
-    hashProvider = new BcryptjsHashProvider();
   });
 
   beforeEach(async () => {
-    SUT = new SignupUseCase.UseCase(userRepository, hashProvider);
+    SUT = new DeleteUser.UseCase(userRepository);
     await prismaService.user.deleteMany();
   })
 
@@ -34,16 +33,30 @@ describe('Signup use case integration test', () => {
     await module.close();
   })
 
-  it('should create a user successfully', async () => {
+  it('should delete a user successfully', async () => {
     const props: SignupUseCase.Input = {
       name: 'Jane Doe',
       email: 'a@gmail.com',
       password: '1234'
     };
 
-    const result = await SUT.execute(props);
-    expect(result.id).toBeDefined();
-    expect(result.createdAt).toBeInstanceOf(Date);
+    const userEntity = new UserEntity(props)
+
+    await prismaService.user.create({ data: { ...userEntity.toJson(), id: userEntity.id!.toString() } });
+
+    let usersCount = await prismaService.user.count();
+
+    expect(usersCount).toBe(1);
+
+    await SUT.execute({ id: userEntity.id!.toString() });
+
+    const user = await prismaService.user.findUnique({ where: { id: userEntity.id!.toString() } });
+
+    expect(user).toBeNull();
+
+    usersCount = await prismaService.user.count();
+
+    expect(usersCount).toBe(0)
   })
 
 
