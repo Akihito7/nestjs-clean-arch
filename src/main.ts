@@ -11,7 +11,8 @@ async function bootstrap() {
     AppModule,
     new FastifyAdapter(),
   )
-  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)))
-  await app.listen(process.env.PORT ?? 3000, '0.0.0.0', () => console.log("server running on port" + process.env.PORT ? process.env.PORT : 3000))
+  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
+  const PORT = process.env.PORT ?? 3000
+  await app.listen(PORT, '0.0.0.0', () => console.log(`server running on port ${PORT} `))
 }
 bootstrap()
