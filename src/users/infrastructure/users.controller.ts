@@ -12,6 +12,8 @@ import { UpdateUser } from '../application/use-cases/update-user.use-case';
 import { UpdateUserPassword } from '../application/use-cases/update-user-password.use-case';
 import { UpdateUserPasswordDTO } from './dtos/update-user-password.dto';
 import { DeleteUser } from '../application/use-cases/delete-user.use-case';
+import { UserPresenter } from './presenters/user.presenter';
+import { IUserOutput } from '../application/dtos/user-output';
 
 @Controller('users')
 export class UsersController {
@@ -37,6 +39,9 @@ export class UsersController {
   @Inject(DeleteUser.UseCase)
   private deleteUserUseCase: DeleteUser.UseCase
 
+  static userToResponse(output: IUserOutput) {
+    return new UserPresenter(output)
+  }
 
   @HttpCode(204)
   @Post('signup')
@@ -47,12 +52,14 @@ export class UsersController {
   @HttpCode(200)
   @Post('signln')
   async signln(@Body() signlnDTO: SignlnDTO) {
-    return this.signlnUseCase.execute(signlnDTO)
+    const output = await this.signlnUseCase.execute(signlnDTO);
+    return UsersController.userToResponse(output)
   }
 
   @Get("/:id")
   async findOne(@Param("id") userId: string) {
-    return this.getUserUseCase.execute({ id: userId })
+    const output = await this.getUserUseCase.execute({ id: userId });
+    return UsersController.userToResponse(output);
   }
 
   @Get()
@@ -65,14 +72,16 @@ export class UsersController {
     @Param("id") userId: string,
     @Body() updateUserDTO: UpdateUserDTO
   ) {
-    return this.updateUserUseCase.execute({ id: userId, ...updateUserDTO })
+    const output = await this.updateUserUseCase.execute({ id: userId, ...updateUserDTO });
+    return UsersController.userToResponse(output);
   }
 
   @Patch("/:id")
   async updatePassword(
     @Param("id") userId: string,
     @Body() updateUserPasswordDTO: UpdateUserPasswordDTO) {
-    return this.updateUserPasswordUseCase.execute({ id: userId, ...updateUserPasswordDTO })
+    const output = await this.updateUserPasswordUseCase.execute({ id: userId, ...updateUserPasswordDTO });
+    return UsersController.userToResponse(output);
   }
 
   @HttpCode(204)
