@@ -1,6 +1,6 @@
 import { Transform } from "class-transformer";
 
-interface PaginationPresenterProps {
+export interface PaginationPresenterProps {
   currentPage: number;
   perPage: number;
   lastPage: number;
@@ -16,7 +16,7 @@ export class PaginationPresenter {
 
   @Transform(({ value }) => parseInt(value))
   lastPage: number;
-
+  
   @Transform(({ value }) => parseInt(value))
   total: number;
 
