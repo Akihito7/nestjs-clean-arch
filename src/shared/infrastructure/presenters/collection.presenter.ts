@@ -7,7 +7,7 @@ export abstract class CollectionPresenter {
   protected paginationPresenterProps: PaginationPresenter;
 
   constructor(props: PaginationPresenter) {
-    this.paginationPresenterProps = props;
+    this.paginationPresenterProps = new PaginationPresenter(props);
   };
 
   @Expose()
