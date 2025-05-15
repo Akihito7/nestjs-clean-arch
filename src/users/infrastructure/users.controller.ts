@@ -46,7 +46,8 @@ export class UsersController {
   @HttpCode(204)
   @Post('signup')
   async signup(@Body() signupDTO: SignupDTO) {
-    return this.signupUseCase.execute(signupDTO)
+    const output = await this.signupUseCase.execute(signupDTO)
+    return UsersController.userToResponse(output)
   }
 
   @HttpCode(200)
