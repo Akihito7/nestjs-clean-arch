@@ -12,7 +12,7 @@ import { UpdateUser } from '../application/use-cases/update-user.use-case';
 import { UpdateUserPassword } from '../application/use-cases/update-user-password.use-case';
 import { UpdateUserPasswordDTO } from './dtos/update-user-password.dto';
 import { DeleteUser } from '../application/use-cases/delete-user.use-case';
-import { UserPresenter } from './presenters/user.presenter';
+import { UserCollectionPresenter, UserPresenter } from './presenters/user.presenter';
 import { IUserOutput } from '../application/dtos/user-output';
 
 @Controller('users')
@@ -43,6 +43,10 @@ export class UsersController {
     return new UserPresenter(output)
   }
 
+  static userListToResponse(output: ListUsers.Output) {
+    return new UserCollectionPresenter(output)
+  }
+
   @HttpCode(204)
   @Post('signup')
   async signup(@Body() signupDTO: SignupDTO) {
@@ -65,11 +69,12 @@ export class UsersController {
 
   @Get()
   async search(@Query() searchableDTO: ListUserDTO) {
-    return this.listUserUseCase.execute(searchableDTO)
+    const output = await this.listUserUseCase.execute(searchableDTO);
+    return UsersController.userListToResponse(output)
   }
 
   @Put("/:id")
-  async update(
+  async update( 
     @Param("id") userId: string,
     @Body() updateUserDTO: UpdateUserDTO
   ) {

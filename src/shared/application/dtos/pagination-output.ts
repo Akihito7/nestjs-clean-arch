@@ -8,9 +8,10 @@ export interface PaginationOutput<Items = any> {
   perPage: number;
   sort: string | null;
   filter: string | null
+  lastPage: number;
 }
 
-export class PaginationOutputMapper  {
+export class PaginationOutputMapper {
   static toOutput
     <
       Items,
@@ -26,7 +27,8 @@ export class PaginationOutputMapper  {
       filter: searchResult.filter,
       perPage: searchResult.perPage,
       sort: searchResult.sort,
-      total: searchResult.total
+      total: searchResult.total,
+      lastPage: searchResult.lastPage,
     }
   }
 }
