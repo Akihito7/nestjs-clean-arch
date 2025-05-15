@@ -29,7 +29,7 @@ export class UserPresenter {
 export class UserCollectionPresenter extends CollectionPresenter {
   data: UserPresenter[];
 
-  constructor(props: ListUsers.Output) {
+  constructor(props: Omit<ListUsers.Output, 'sort' | 'filter'>) {
     const { items, ...paginationPresenterProps } = props;
     super(paginationPresenterProps);
     this.data = items.map(user => new UserPresenter(user));

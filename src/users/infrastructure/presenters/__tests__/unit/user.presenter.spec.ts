@@ -1,6 +1,7 @@
 import { IUserOutput } from "@/users/application/dtos/user-output";
-import { UserPresenter } from "../../user.presenter"
+import { UserCollectionPresenter, UserPresenter } from "../../user.presenter"
 import { instanceToPlain } from "class-transformer";
+import { PaginationPresenter } from "@/shared/infrastructure/presenters/pagination.presenter";
 
 describe('UserPresenter unit tests', () => {
   let SUT: UserPresenter;
@@ -32,6 +33,92 @@ describe('UserPresenter unit tests', () => {
       name: 'Jane Doe',
       email: 'a@a.com.br',
       createdAt: props.createdAt.toISOString()
+    })
+  })
+})
+
+
+describe('UserCollectionPresenter unit tests', () => {
+  const createdAt = new Date()
+  const props = {
+    id: 'e71c52a2-9710-4a96-a08e-144af4209b5d',
+    name: 'test name',
+    email: 'a@a.com',
+    password: 'fake',
+    createdAt,
+  }
+
+  describe('constructor', () => {
+    it('should set values', () => {
+      const SUT = new UserCollectionPresenter({
+        items: [props],
+        currentPage: 1,
+        perPage: 2,
+        lastPage: 1,
+        total: 1,
+      })
+      expect(SUT.meta).toBeInstanceOf(PaginationPresenter)
+      expect(SUT.meta).toStrictEqual(
+        new PaginationPresenter({
+          currentPage: 1,
+          perPage: 2,
+          lastPage: 1,
+          total: 1,
+        }),
+      )
+      expect(SUT.data).toStrictEqual([new UserPresenter(props)])
+    })
+  })
+
+  it('should presenter data', () => {
+    let SUT = new UserCollectionPresenter({
+      items: [props],
+      currentPage: 1,
+      perPage: 2,
+      lastPage: 1,
+      total: 1,
+    })
+    let output = instanceToPlain(SUT)
+    expect(output).toStrictEqual({
+      data: [
+        {
+          id: 'e71c52a2-9710-4a96-a08e-144af4209b5d',
+          name: 'test name',
+          email: 'a@a.com',
+          createdAt: createdAt.toISOString(),
+        },
+      ],
+      meta: {
+        currentPage: 1,
+        perPage: 2,
+        lastPage: 1,
+        total: 1,
+      },
+    })
+
+    SUT = new UserCollectionPresenter({
+      items: [props],
+      currentPage: '1' as any,
+      perPage: '2' as any,
+      lastPage: '1' as any,
+      total: '1' as any,
+    })
+    output = instanceToPlain(SUT)
+    expect(output).toStrictEqual({
+      data: [
+        {
+          id: 'e71c52a2-9710-4a96-a08e-144af4209b5d',
+          name: 'test name',
+          email: 'a@a.com',
+          createdAt: createdAt.toISOString(),
+        },
+      ],
+      meta: {
+        currentPage: 1,
+        perPage: 2,
+        lastPage: 1,
+        total: 1,
+      },
     })
   })
 })
