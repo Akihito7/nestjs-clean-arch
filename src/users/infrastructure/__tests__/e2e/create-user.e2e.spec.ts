@@ -11,6 +11,7 @@ import { Reflector } from "@nestjs/core";
 import { IUserRepository } from "@/users/domain/repositories/user.repository-interface";
 import { UsersController } from "../../users.controller";
 import { instanceToPlain } from "class-transformer";
+import { globalMainConfig } from "@/global-main-config";
 
 describe('UsersController (e2e) - POST /users/signup', () => {
   let app: INestApplication;
@@ -36,7 +37,7 @@ describe('UsersController (e2e) - POST /users/signup', () => {
 
     app = appModule.createNestApplication();
 
-    app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)))
+    await globalMainConfig(app);
 
     await app.init();
   });
@@ -51,13 +52,14 @@ describe('UsersController (e2e) - POST /users/signup', () => {
       .send(signupDTO)
       .expect(201);
 
-    expect(Object.keys(response.body))
+    expect(Object.keys(response.body.data))
       .toStrictEqual(['id', 'name', 'email', 'createdAt']);
 
-    const user = await repository.findById(response.body.id);
+    const user = await repository.findById(response.body.data.id);
     const presenter = UsersController.userToResponse(user!.toJson());
     const serialized = instanceToPlain(presenter);
+   
 
-    expect(response.body).toStrictEqual(serialized);
+    expect(response.body.data).toStrictEqual(serialized);
   })
 })
