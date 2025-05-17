@@ -4,14 +4,14 @@ import { UsersModule } from "../../users.module";
 import { DatabaseModule } from "@/shared/infrastructure/database/database.module";
 import { PrismaClient } from "@prisma/client";
 import request from "supertest"
-import { ClassSerializerInterceptor, INestApplication } from "@nestjs/common";
 import { SignupDTO } from "../../dtos/signup.dto";
 import { setupPrismaTest } from "@/shared/infrastructure/database/prisma/testing/setup-prisma-test";
-import { Reflector } from "@nestjs/core";
 import { IUserRepository } from "@/users/domain/repositories/user.repository-interface";
 import { UsersController } from "../../users.controller";
 import { instanceToPlain } from "class-transformer";
 import { globalMainConfig } from "@/global-main-config";
+import { INestApplication } from "@nestjs/common";
+import { UserEntity } from "@/users/domain/entities/user.entity";
 
 describe('UsersController (e2e) - POST /users/signup', () => {
   let app: INestApplication;
@@ -134,6 +134,17 @@ describe('UsersController (e2e) - POST /users/signup', () => {
       .expect(422)
     expect(res.body.error).toBe('Unprocessable Entity')
     expect(res.body.message).toEqual(['property xpto should not exist'])
+  })
+
+  it('should return a error with 409 code when email already exists', async () => {
+    console.log("its me dto", signupDTO)
+    await repository.insert(new UserEntity({ ...signupDTO as any }))
+    const res = await request(app.getHttpServer())
+      .post('/users/signup')
+      .send(signupDTO)
+      .expect(409);
+    expect(res.body.error).toBe('ConflictError')
+    expect(res.body.message).toEqual('Email address already used')
   })
 
 })
