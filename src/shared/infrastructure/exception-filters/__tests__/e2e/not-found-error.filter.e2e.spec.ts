@@ -26,7 +26,7 @@ describe('notFoundErrorFilter e2e tests', () => {
   })
 
   it('should throw error when entity is not found', async () => {
-    const res = await request(app.getHttpServer()).get('/stub').expect(404).expect({
+    await request(app.getHttpServer()).get('/stub').expect(404).expect({
       statusCode: 404,
       error: 'NotFoundError',
       message: 'Stub class NotFoundError'
