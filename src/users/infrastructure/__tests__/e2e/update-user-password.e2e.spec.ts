@@ -6,14 +6,10 @@ import { PrismaClient } from "@prisma/client";
 import request from "supertest"
 import { setupPrismaTest } from "@/shared/infrastructure/database/prisma/testing/setup-prisma-test";
 import { IUserRepository } from "@/users/domain/repositories/user.repository-interface";
-import { UsersController } from "../../users.controller";
-import { instanceToPlain } from "class-transformer";
 import { globalMainConfig } from "@/global-main-config";
 import { INestApplication } from "@nestjs/common";
 import { UserEntity } from "@/users/domain/entities/user.entity";
-import { UpdateUserDTO } from "../../dtos/update-user.dto";
 import { userDateBuilder } from "@/users/domain/testing/helpers/user-data-builder";
-import { UpdateUserPassword } from "@/users/application/use-cases/update-user-password.use-case";
 import { UpdateUserPasswordDTO } from "../../dtos/update-user-password.dto";
 import { IHashProvider } from "@/shared/application/providers/hash.provider";
 import { BcryptjsHashProvider } from "@/users/application/providers/bcryptjs-hash.provider";
