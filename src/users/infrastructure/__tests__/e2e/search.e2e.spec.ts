@@ -44,7 +44,7 @@ describe('UsersController (e2e) - GET /users', () => {
     await prismaService.user.deleteMany()
   })
 
-  it('should find one user', async () => {
+  it('should return users ordered default way', async () => {
     const entities = Array.from({ length: 3 })
       .map((_, index) => new UserEntity(userDateBuilder({
         createdAt: new Date((new Date().getTime() + index))
@@ -65,6 +65,48 @@ describe('UsersController (e2e) - GET /users', () => {
       meta: { currentPage: 1, perPage: 15, lastPage: 1, total: 3 }
     })
 
+  })
+
+  it('should return the users ordered by createdAt', async () => {
+    const createdAt = new Date()
+    const entities: UserEntity[] = []
+    const arrange = ['test', 'a', 'TEST', 'b', 'TeSt']
+    arrange.forEach((element, index) => {
+      entities.push(
+        new UserEntity({
+          ...userDateBuilder({}),
+          name: element,
+          email: `a${index}@a.com`,
+        }),
+      )
+    })
+    await prismaService.user.createMany({
+      data: entities.map(item => ({ ...item.toJson(), id: item.id!.toString() })),
+    })
+    const searchParams = {
+      page: 1,
+      perPage: 2,
+      sort: 'name',
+      sortDir: 'asc',
+      filter: 'TEST',
+    }
+    const queryParams = new URLSearchParams(searchParams as any).toString()
+
+    const res = await request(app.getHttpServer())
+      .get(`/users/?${queryParams}`)
+      .expect(200)
+    expect(Object.keys(res.body)).toStrictEqual(['data', 'meta'])
+    expect(res.body).toStrictEqual({
+      data: [entities[0], entities[4]].map(item =>
+        instanceToPlain(UsersController.userToResponse(item.toJson())),
+      ),
+      meta: {
+        total: 3,
+        currentPage: 1,
+        perPage: 2,
+        lastPage: 2,
+      },
+    })
   })
 
   it('should return a error with 422 when param fake is provided', async () => {
