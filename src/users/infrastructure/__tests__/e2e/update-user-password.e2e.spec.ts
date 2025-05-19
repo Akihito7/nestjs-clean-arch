@@ -17,12 +17,13 @@ import { UpdateUserPassword } from "@/users/application/use-cases/update-user-pa
 import { UpdateUserPasswordDTO } from "../../dtos/update-user-password.dto";
 import { IHashProvider } from "@/shared/application/providers/hash.provider";
 import { BcryptjsHashProvider } from "@/users/application/providers/bcryptjs-hash.provider";
+import { InvalidPasswordErrorFilter } from "@/shared/infrastructure/exception-filters/invalid-password-error.filter";
 
 describe('UsersController (e2e) - PUT /users/:id', () => {
   let app: INestApplication;
   let appModule: TestingModule;
   let prismaService: PrismaClient;
-  let updatePasswordUserDTO: UpdateUserPasswordDTO;
+  let updatePasswordUserDTO: UpdateUserPasswordDTO | Partial<UpdateUserPasswordDTO>;
   let repository: IUserRepository.Repository
   let entity: UserEntity;
   let hashProvider: IHashProvider;
@@ -40,6 +41,8 @@ describe('UsersController (e2e) - PUT /users/:id', () => {
     hashProvider = new BcryptjsHashProvider();
 
     app = appModule.createNestApplication();
+
+    app.useGlobalFilters(new InvalidPasswordErrorFilter());
 
     await globalMainConfig(app);
 
@@ -73,29 +76,66 @@ describe('UsersController (e2e) - PUT /users/:id', () => {
     expect(checkNewPassword).toBeTruthy();
   })
 
-  /*   it('should return a error with 422 code when the request body is invalid', async () => {
-  
-      const response = await request(app.getHttpServer())
-        .put(`/users/${entity.id}`)
-        .send({})
-        .expect(422);
-  
-      expect(response.body.message).toStrictEqual(([
-        'name should not be empty',
-        'name must be a string',
-      ]));
-      expect(response.body.error).toStrictEqual('Unprocessable Entity');
-    })
-  
-    it('should return a error with 404 code when entity is not found', async () => {
-      await request(app.getHttpServer())
-        .put('/users/fakeId')
-        .send(updateUserDTO)
-        .expect(404).expect({
-          statusCode: 404,
-          error: 'NotFoundError',
-          message: 'User with this id fakeId not found.'
-        })
-  
-    }) */
+  it('should return a error with 422 code when the request body is invalid', async () => {
+    const res = await request(app.getHttpServer())
+      .patch('/users/fakeId')
+      .send({})
+      .expect(422)
+    expect(res.body.error).toBe('Unprocessable Entity')
+    expect(res.body.message).toEqual([
+      'newPassword should not be empty',
+      'newPassword must be a string',
+      'oldPassword should not be empty',
+      'oldPassword must be a string',
+    ])
+  });
+
+  it('should return error 400 when old password does not match', async () => {
+    updatePasswordUserDTO.oldPassword = 'fakePassword'
+    await request(app.getHttpServer())
+      .patch(`/users/${entity.id}`)
+      .send(updatePasswordUserDTO).expect(400).expect({
+        statusCode: 400,
+        error: 'InvalidPasswordError',
+        message: 'Old password does not match'
+      })
+  });
+
+
+  it('should return error 404 when user with id is not found', async () => {
+    updatePasswordUserDTO.oldPassword = 'fakePassword'
+    const res = await request(app.getHttpServer())
+      .patch('/users/fakeId')
+      .send(updatePasswordUserDTO).expect(404).expect({
+        statusCode: 404,
+        error: 'NotFoundError',
+        message: 'User with this id fakeId not found.'
+      },)
+  });
+
+  it('should return a error with 422 code when the password field is invalid', async () => {
+    delete updatePasswordUserDTO.newPassword
+    const res = await request(app.getHttpServer())
+      .patch(`/users/${entity.id}`)
+      .send(updatePasswordUserDTO)
+      .expect(422)
+    expect(res.body.error).toBe('Unprocessable Entity')
+    expect(res.body.message).toEqual([
+      'newPassword should not be empty',
+      'newPassword must be a string',
+    ])
+  });
+
+  it('should return a error with 422 code when the oldPassword field is invalid', async () => {
+    delete updatePasswordUserDTO.oldPassword
+    const res = await request(app.getHttpServer())
+      .patch(`/users/${entity.id}`)
+      .send(updatePasswordUserDTO)
+      .expect(422)
+    expect(res.body.error).toBe('Unprocessable Entity')
+    expect(res.body.message).toEqual([
+      'oldPassword should not be empty',
+      'oldPassword must be a string',
+    ])
+  })
 })
