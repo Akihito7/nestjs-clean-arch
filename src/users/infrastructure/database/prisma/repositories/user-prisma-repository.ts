@@ -99,10 +99,7 @@ export class UserPrismaRepository implements IUserRepository.Repository {
     const { id, name, email, } = entity.toJson();
     await this._getById(id!.toString())
     await this.prismaService.user.update({
-      data: {
-        name,
-        email
-      },
+      data: { ...entity.toJson(), id: entity.id!.toString() },
       where: {
         id: id!.toString()
       }
