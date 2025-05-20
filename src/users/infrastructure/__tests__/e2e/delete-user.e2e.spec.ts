@@ -10,6 +10,9 @@ import { globalMainConfig } from "@/global-main-config";
 import { INestApplication } from "@nestjs/common";
 import { UserEntity } from "@/users/domain/entities/user.entity";
 import { userDateBuilder } from "@/users/domain/testing/helpers/user-data-builder";
+import supertest from "supertest";
+import { IHashProvider } from "@/shared/application/providers/hash.provider";
+import { BcryptjsHashProvider } from "@/users/application/providers/bcryptjs-hash.provider";
 
 describe('UsersController (e2e) - Delete /users/id', () => {
   let app: INestApplication;
@@ -17,6 +20,8 @@ describe('UsersController (e2e) - Delete /users/id', () => {
   let prismaService: PrismaClient;
   let repository: IUserRepository.Repository
   let entity: UserEntity;
+  let token: string;
+  let hashProvider: IHashProvider;
 
   beforeAll(async () => {
     setupPrismaTest();
@@ -27,7 +32,9 @@ describe('UsersController (e2e) - Delete /users/id', () => {
       imports: [EnvConfigModule, UsersModule, DatabaseModule.forTest(prismaService as any)]
     }).compile();
 
-    repository = appModule.get<IUserRepository.Repository>('UserRepository')
+    repository = appModule.get<IUserRepository.Repository>('UserRepository');
+
+    hashProvider = new BcryptjsHashProvider();
 
     app = appModule.createNestApplication();
 
@@ -37,8 +44,20 @@ describe('UsersController (e2e) - Delete /users/id', () => {
   });
 
   beforeEach(async () => {
-    entity = new UserEntity(userDateBuilder());
+    const hashPassword = await hashProvider.generateHash('1234')
+    entity = new UserEntity(userDateBuilder({
+      name: 'Jane Doe',
+      email: 'janedoe@gmail.com',
+      password: hashPassword
+    }));
     await repository.insert(entity);
+
+    const loginResponse = await request(app.getHttpServer()).post('/users/signln').send({
+      email: 'janedoe@gmail.com',
+      password: '1234'
+    });
+
+    token = loginResponse.body.acessToken;
   })
 
 
@@ -51,6 +70,7 @@ describe('UsersController (e2e) - Delete /users/id', () => {
   it('should delete user', async () => {
     await request(app.getHttpServer())
       .delete(`/users/${entity.id}`)
+      .set('Authorization', `Bearer ${token}`)
       .expect(204)
       .expect({})
   })
@@ -58,6 +78,7 @@ describe('UsersController (e2e) - Delete /users/id', () => {
   it('should return a error with 404 code when entity is not found', async () => {
     await request(app.getHttpServer())
       .get('/users/fakeId')
+      .set('Authorization', `Bearer ${token}`)
       .send({})
       .expect(404).expect({
         statusCode: 404,
