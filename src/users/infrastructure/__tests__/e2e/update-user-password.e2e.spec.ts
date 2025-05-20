@@ -23,6 +23,8 @@ describe('UsersController (e2e) - PUT /users/:id', () => {
   let repository: IUserRepository.Repository
   let entity: UserEntity;
   let hashProvider: IHashProvider;
+  let token: string;
+
 
   beforeAll(async () => {
     setupPrismaTest();
@@ -50,9 +52,20 @@ describe('UsersController (e2e) - PUT /users/:id', () => {
       newPassword: 'new_password',
       oldPassword: 'old_password'
     };
-    const passwordHashed = await hashProvider.generateHash('old_password')
-    entity = new UserEntity(userDateBuilder({ password: passwordHashed }));
+    const hashPassword = await hashProvider.generateHash('old_password')
+    entity = new UserEntity(userDateBuilder({
+      name: 'Jane Doe',
+      email: 'janedoe@gmail.com',
+      password: hashPassword
+    }));
     await repository.insert(entity);
+
+    const loginResponse = await request(app.getHttpServer()).post('/users/signln').send({
+      email: 'janedoe@gmail.com',
+      password: 'old_password'
+    });
+
+    token = loginResponse.body.acessToken;
   })
 
   afterEach(async () => {
@@ -63,6 +76,7 @@ describe('UsersController (e2e) - PUT /users/:id', () => {
     const response = await request(app.getHttpServer())
       .patch(`/users/${entity.id}`)
       .send(updatePasswordUserDTO)
+      .set('Authorization', `Bearer ${token}`)
       .expect(200);
     const userUpdated = await repository.findById(response.body.data.id);
     const checkNewPassword = await hashProvider.compare(
@@ -76,6 +90,7 @@ describe('UsersController (e2e) - PUT /users/:id', () => {
     const res = await request(app.getHttpServer())
       .patch('/users/fakeId')
       .send({})
+      .set('Authorization', `Bearer ${token}`)
       .expect(422)
     expect(res.body.error).toBe('Unprocessable Entity')
     expect(res.body.message).toEqual([
@@ -90,6 +105,7 @@ describe('UsersController (e2e) - PUT /users/:id', () => {
     updatePasswordUserDTO.oldPassword = 'fakePassword'
     await request(app.getHttpServer())
       .patch(`/users/${entity.id}`)
+      .set('Authorization', `Bearer ${token}`)
       .send(updatePasswordUserDTO).expect(400).expect({
         statusCode: 400,
         error: 'InvalidPasswordError',
@@ -106,7 +122,8 @@ describe('UsersController (e2e) - PUT /users/:id', () => {
         statusCode: 404,
         error: 'NotFoundError',
         message: 'User with this id fakeId not found.'
-      },)
+      })
+      .set('Authorization', `Bearer ${token}`)
   });
 
   it('should return a error with 422 code when the password field is invalid', async () => {
@@ -114,6 +131,7 @@ describe('UsersController (e2e) - PUT /users/:id', () => {
     const res = await request(app.getHttpServer())
       .patch(`/users/${entity.id}`)
       .send(updatePasswordUserDTO)
+      .set('Authorization', `Bearer ${token}`)
       .expect(422)
     expect(res.body.error).toBe('Unprocessable Entity')
     expect(res.body.message).toEqual([
@@ -127,6 +145,7 @@ describe('UsersController (e2e) - PUT /users/:id', () => {
     const res = await request(app.getHttpServer())
       .patch(`/users/${entity.id}`)
       .send(updatePasswordUserDTO)
+      .set('Authorization', `Bearer ${token}`)
       .expect(422)
     expect(res.body.error).toBe('Unprocessable Entity')
     expect(res.body.message).toEqual([

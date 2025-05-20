@@ -10,7 +10,6 @@ import { globalMainConfig } from "@/global-main-config";
 import { INestApplication } from "@nestjs/common";
 import { UserEntity } from "@/users/domain/entities/user.entity";
 import { userDateBuilder } from "@/users/domain/testing/helpers/user-data-builder";
-import supertest from "supertest";
 import { IHashProvider } from "@/shared/application/providers/hash.provider";
 import { BcryptjsHashProvider } from "@/users/application/providers/bcryptjs-hash.provider";
 

@@ -12,6 +12,8 @@ import { globalMainConfig } from "@/global-main-config";
 import { INestApplication } from "@nestjs/common";
 import { UserEntity } from "@/users/domain/entities/user.entity";
 import { userDateBuilder } from "@/users/domain/testing/helpers/user-data-builder";
+import { IHashProvider } from "@/shared/application/providers/hash.provider";
+import { BcryptjsHashProvider } from "@/users/application/providers/bcryptjs-hash.provider";
 
 describe('UsersController (e2e) - GET /users/id', () => {
   let app: INestApplication;
@@ -19,6 +21,8 @@ describe('UsersController (e2e) - GET /users/id', () => {
   let prismaService: PrismaClient;
   let repository: IUserRepository.Repository
   let entity: UserEntity;
+  let hashProvider: IHashProvider;
+  let token: string;
 
   beforeAll(async () => {
     setupPrismaTest();
@@ -30,6 +34,8 @@ describe('UsersController (e2e) - GET /users/id', () => {
     }).compile();
 
     repository = appModule.get<IUserRepository.Repository>('UserRepository')
+    hashProvider = new BcryptjsHashProvider();
+
 
     app = appModule.createNestApplication();
 
@@ -39,8 +45,20 @@ describe('UsersController (e2e) - GET /users/id', () => {
   });
 
   beforeEach(async () => {
-    entity = new UserEntity(userDateBuilder());
+    const hashPassword = await hashProvider.generateHash('old_password')
+    entity = new UserEntity(userDateBuilder({
+      name: 'Jane Doe',
+      email: 'janedoe@gmail.com',
+      password: hashPassword
+    }));
     await repository.insert(entity);
+
+    const loginResponse = await request(app.getHttpServer()).post('/users/signln').send({
+      email: 'janedoe@gmail.com',
+      password: 'old_password'
+    });
+
+    token = loginResponse.body.acessToken;
   })
 
 
@@ -48,11 +66,10 @@ describe('UsersController (e2e) - GET /users/id', () => {
     await prismaService.user.deleteMany()
   })
 
-
-
   it('should find one user', async () => {
     const response = await request(app.getHttpServer())
       .get(`/users/${entity.id}`)
+      .set('Authorization', `Bearer ${token}`)
       .expect(200);
     const presenter = UsersController.userToResponse(entity.toJson());
     const serialized = instanceToPlain(presenter);
@@ -64,6 +81,7 @@ describe('UsersController (e2e) - GET /users/id', () => {
     await request(app.getHttpServer())
       .get('/users/fakeId')
       .send({})
+      .set('Authorization', `Bearer ${token}`)
       .expect(404).expect({
         statusCode: 404,
         error: 'NotFoundError',

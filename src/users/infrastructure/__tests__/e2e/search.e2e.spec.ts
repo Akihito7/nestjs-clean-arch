@@ -14,6 +14,8 @@ import { UserEntity } from "@/users/domain/entities/user.entity";
 import { userDateBuilder } from "@/users/domain/testing/helpers/user-data-builder";
 import { SearchParams } from "@/shared/domain/repositories/searchable.interface";
 import { URLSearchParams } from "node:url";
+import { IHashProvider } from "@/shared/application/providers/hash.provider";
+import { BcryptjsHashProvider } from "@/users/application/providers/bcryptjs-hash.provider";
 
 describe('UsersController (e2e) - GET /users', () => {
   let app: INestApplication;
@@ -21,6 +23,8 @@ describe('UsersController (e2e) - GET /users', () => {
   let prismaService: PrismaClient;
   let repository: IUserRepository.Repository
   let entity: UserEntity;
+  let hashProvider: IHashProvider;
+  let token: string;
 
   beforeAll(async () => {
     setupPrismaTest();
@@ -31,7 +35,8 @@ describe('UsersController (e2e) - GET /users', () => {
       imports: [EnvConfigModule, UsersModule, DatabaseModule.forTest(prismaService as any)]
     }).compile();
 
-    repository = appModule.get<IUserRepository.Repository>('UserRepository')
+    repository = appModule.get<IUserRepository.Repository>('UserRepository');
+    hashProvider = new BcryptjsHashProvider();
 
     app = appModule.createNestApplication();
 
@@ -39,6 +44,23 @@ describe('UsersController (e2e) - GET /users', () => {
 
     await app.init();
   });
+
+  beforeEach(async () => {
+    const hashPassword = await hashProvider.generateHash('1234')
+    entity = new UserEntity(userDateBuilder({
+      password: hashPassword,
+      createdAt: new Date(Date.now() + 10 * 60 * 1000)
+    }));
+
+    await repository.insert(entity);
+
+    const loginResponse = await request(app.getHttpServer()).post('/users/signln').send({
+      email: entity.email,
+      password: '1234',
+    });
+
+    token = loginResponse.body.acessToken
+  })
 
   afterEach(async () => {
     await prismaService.user.deleteMany()
@@ -56,19 +78,23 @@ describe('UsersController (e2e) - GET /users', () => {
 
     const queryParams = new URLSearchParams(searchParams as any).toString();
 
-    const response = await request(app.getHttpServer()).get(`/users?${queryParams}`).expect(200);
+    const response = await request(app.getHttpServer())
+      .get(`/users?${queryParams}`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
 
     expect(Object.keys(response.body)).toStrictEqual(['data', 'meta']);
 
+    entities.push(entity)
+
     expect(response.body).toStrictEqual({
       data: entities.reverse().map(item => instanceToPlain(UsersController.userToResponse(item.toJson()))),
-      meta: { currentPage: 1, perPage: 15, lastPage: 1, total: 3 }
+      meta: { currentPage: 1, perPage: 15, lastPage: 1, total: 4 }
     })
 
   })
 
   it('should return the users ordered by createdAt', async () => {
-    const createdAt = new Date()
     const entities: UserEntity[] = []
     const arrange = ['test', 'a', 'TEST', 'b', 'TeSt']
     arrange.forEach((element, index) => {
@@ -94,6 +120,7 @@ describe('UsersController (e2e) - GET /users', () => {
 
     const res = await request(app.getHttpServer())
       .get(`/users/?${queryParams}`)
+      .set('Authorization', `Bearer ${token}`)
       .expect(200)
     expect(Object.keys(res.body)).toStrictEqual(['data', 'meta'])
     expect(res.body).toStrictEqual({
@@ -110,10 +137,14 @@ describe('UsersController (e2e) - GET /users', () => {
   })
 
   it('should return a error with 422 when param fake is provided', async () => {
-    await request(app.getHttpServer()).get(`/users?fakeParam=null`).expect(422).expect({
-      message: ['property fakeParam should not exist'],
-      error: 'Unprocessable Entity',
-      statusCode: 422
-    })
+    await request(app.getHttpServer())
+      .get(`/users?fakeParam=null`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(422)
+      .expect({
+        message: ['property fakeParam should not exist'],
+        error: 'Unprocessable Entity',
+        statusCode: 422
+      })
   })
 })

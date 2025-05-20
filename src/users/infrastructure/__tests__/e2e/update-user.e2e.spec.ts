@@ -13,6 +13,8 @@ import { INestApplication } from "@nestjs/common";
 import { UserEntity } from "@/users/domain/entities/user.entity";
 import { UpdateUserDTO } from "../../dtos/update-user.dto";
 import { userDateBuilder } from "@/users/domain/testing/helpers/user-data-builder";
+import { IHashProvider } from "@/shared/application/providers/hash.provider";
+import { BcryptjsHashProvider } from "@/users/application/providers/bcryptjs-hash.provider";
 
 describe('UsersController (e2e) - PUT /users/:id', () => {
   let app: INestApplication;
@@ -21,6 +23,8 @@ describe('UsersController (e2e) - PUT /users/:id', () => {
   let updateUserDTO: UpdateUserDTO;
   let repository: IUserRepository.Repository
   let entity: UserEntity;
+  let token: string;
+  let hashProvider: IHashProvider;
 
   beforeAll(async () => {
     setupPrismaTest();
@@ -31,7 +35,9 @@ describe('UsersController (e2e) - PUT /users/:id', () => {
       imports: [EnvConfigModule, UsersModule, DatabaseModule.forTest(prismaService as any)]
     }).compile();
 
-    repository = appModule.get<IUserRepository.Repository>('UserRepository')
+    repository = appModule.get<IUserRepository.Repository>('UserRepository');
+
+    hashProvider = new BcryptjsHashProvider();
 
     app = appModule.createNestApplication();
 
@@ -44,8 +50,21 @@ describe('UsersController (e2e) - PUT /users/:id', () => {
     updateUserDTO = {
       name: 'Other name',
     };
-    entity = new UserEntity(userDateBuilder());
+
+    const hashPassword = await hashProvider.generateHash('1234');
+    entity = new UserEntity(userDateBuilder({
+      name: 'Jane Doe',
+      email: 'janedoe@gmail.com',
+      password: hashPassword
+    }));
     await repository.insert(entity);
+
+    const loginResponse = await request(app.getHttpServer()).post('/users/signln').send({
+      email: 'janedoe@gmail.com',
+      password: '1234'
+    });
+
+    token = loginResponse.body.acessToken;    
   })
 
   afterEach(async () => {
@@ -56,6 +75,7 @@ describe('UsersController (e2e) - PUT /users/:id', () => {
     const response = await request(app.getHttpServer())
       .put(`/users/${entity.id}`)
       .send(updateUserDTO)
+      .set('Authorization', `Bearer ${token}`)
       .expect(200);
     const userUpdated = await repository.findById(entity.id!.toString());
     const presenter = UsersController.userToResponse(userUpdated!.toJson())
@@ -67,6 +87,7 @@ describe('UsersController (e2e) - PUT /users/:id', () => {
 
     const response = await request(app.getHttpServer())
       .put(`/users/${entity.id}`)
+      .set('Authorization', `Bearer ${token}`)
       .send({})
       .expect(422);
 
@@ -81,6 +102,7 @@ describe('UsersController (e2e) - PUT /users/:id', () => {
     await request(app.getHttpServer())
       .put('/users/fakeId')
       .send(updateUserDTO)
+      .set('Authorization', `Bearer ${token}`)
       .expect(404).expect({
         statusCode: 404,
         error: 'NotFoundError',
