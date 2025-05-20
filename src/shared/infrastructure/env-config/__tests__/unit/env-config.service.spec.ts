@@ -30,4 +30,12 @@ describe('EnvConfigService', () => {
   it('Should be get NODE_ENV', () => {
     expect(SUT.getNodeEnv()).toEqual('test')
   })
+
+  it('Should be get jwt secret', () => {
+    expect(SUT.getJwtSecret()).toEqual('xama')
+  })
+
+  it('Should be get expires in seconds', () => {
+    expect(SUT.getExpiresInSeconds()).toEqual(84600)
+  })
 })
