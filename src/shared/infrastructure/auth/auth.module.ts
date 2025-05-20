@@ -6,10 +6,12 @@ import { EnvConfigService } from '../env-config/env-config.service';
 
 @Module({
   imports: [
+    EnvConfigModule,
     JwtModule.registerAsync({
       imports: [EnvConfigModule],
       useFactory(configService: EnvConfigService) {
         return {
+          global: true,
           secret: configService.getJwtSecret(),
           signOptions: {
             expiresIn: configService.getExpiresInSeconds(),
