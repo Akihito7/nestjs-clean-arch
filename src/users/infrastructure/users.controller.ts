@@ -4,7 +4,6 @@ import { SignupDTO } from './dtos/signup.dto';
 import { Signln } from '../application/use-cases/signln.use-case';
 import { SignlnDTO } from './dtos/signln.dto';
 import { GetUserUseCase } from '../application/use-cases/get-user.use-case';
-import { UUIDTypes } from 'uuid';
 import { ListUserDTO } from './dtos/list-user.dto';
 import { ListUsers } from '../application/use-cases/list-users.use-case';
 import { UpdateUserDTO } from './dtos/update-user.dto';
@@ -14,6 +13,7 @@ import { UpdateUserPasswordDTO } from './dtos/update-user-password.dto';
 import { DeleteUser } from '../application/use-cases/delete-user.use-case';
 import { UserCollectionPresenter, UserPresenter } from './presenters/user.presenter';
 import { IUserOutput } from '../application/dtos/user-output';
+import { AuthService } from '@/shared/infrastructure/auth/auth.service';
 
 @Controller('users')
 export class UsersController {
@@ -39,6 +39,9 @@ export class UsersController {
   @Inject(DeleteUser.UseCase)
   private deleteUserUseCase: DeleteUser.UseCase
 
+  @Inject(AuthService)
+  private authService: AuthService;
+
   static userToResponse(output: IUserOutput) {
     return new UserPresenter(output)
   }
@@ -58,7 +61,7 @@ export class UsersController {
   @Post('signln')
   async signln(@Body() signlnDTO: SignlnDTO) {
     const output = await this.signlnUseCase.execute(signlnDTO);
-    return UsersController.userToResponse(output)
+    return this.authService.generateToken(output.id!.toString());
   }
 
   @Get("/:id")
@@ -74,7 +77,7 @@ export class UsersController {
   }
 
   @Put("/:id")
-  async update( 
+  async update(
     @Param("id") userId: string,
     @Body() updateUserDTO: UpdateUserDTO
   ) {
@@ -94,5 +97,6 @@ export class UsersController {
   @Delete("/:id")
   async delete(@Param("id") userId: string) {
     return this.deleteUserUseCase.execute({ id: userId })
+ 
   }
 }

@@ -11,6 +11,7 @@ export class UserPresenter {
 
   email: string;
 
+  @Exclude()
   password: string;
 
   @Transform(({ value }: { value: Date }) => value.toISOString())

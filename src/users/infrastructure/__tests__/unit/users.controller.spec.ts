@@ -64,16 +64,17 @@ describe('UsersController unit tests', () => {
       execute: jest.fn().mockReturnValue(Promise.resolve(output))
     };
 
+    const mockGenerateToken = {
+      generateToken: jest.fn().mockReturnValue(Promise.resolve('fake_token'))
+    }
+
     SUT['signlnUseCase'] = mockSignlnUseCase as any
+    SUT['authService'] = mockGenerateToken as any
 
-    const presenter = await SUT.signln(input);
-
-    expect(presenter).toBeInstanceOf(UserPresenter)
-    expect(presenter).toStrictEqual(new UserPresenter(output))
-    expect(mockSignlnUseCase.execute).toHaveBeenCalledWith(input);
+    const result = await SUT.signln(input);
+    expect(result).toStrictEqual('fake_token')
+    expect(mockGenerateToken.generateToken).toHaveBeenCalledWith(output.id)
   })
-
-
 
   it('should update user', async () => {
 
@@ -128,10 +129,8 @@ describe('UsersController unit tests', () => {
 
     SUT['deleteUserUseCase'] = mockDeleteUserUseCase as any
 
-    const presenter = await SUT.delete(id.toString());
+    await SUT.delete(id.toString());
 
-    expect(presenter).toBeInstanceOf(UserPresenter)
-    expect(presenter).toStrictEqual(new UserPresenter(output))
     expect(mockDeleteUserUseCase.execute).toHaveBeenCalledWith({ id });
   })
 
@@ -159,7 +158,8 @@ describe('UsersController unit tests', () => {
       perPage: 15,
       total: 1,
       filter: '',
-      sort: ''
+      sort: '',
+      lastPage: 1
     }
 
     const input: ListUserDTO = {
