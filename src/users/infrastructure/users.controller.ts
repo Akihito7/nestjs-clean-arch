@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Inject, Param, Patch, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Inject, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { SignupUseCase } from '../application/use-cases/signup.use-case';
 import { SignupDTO } from './dtos/signup.dto';
 import { Signln } from '../application/use-cases/signln.use-case';
@@ -14,6 +14,7 @@ import { DeleteUser } from '../application/use-cases/delete-user.use-case';
 import { UserCollectionPresenter, UserPresenter } from './presenters/user.presenter';
 import { IUserOutput } from '../application/dtos/user-output';
 import { AuthService } from '@/shared/infrastructure/auth/auth.service';
+import { AuthGuard } from '@/shared/infrastructure/auth/guards/auth.guard';
 
 @Controller('users')
 export class UsersController {
@@ -64,18 +65,22 @@ export class UsersController {
     return this.authService.generateToken(output.id!.toString());
   }
 
+
+  @UseGuards(AuthGuard)
   @Get("/:id")
   async findOne(@Param("id") userId: string) {
     const output = await this.getUserUseCase.execute({ id: userId });
     return UsersController.userToResponse(output);
   }
 
+  @UseGuards(AuthGuard)
   @Get()
   async search(@Query() searchableDTO: ListUserDTO) {
     const output = await this.listUserUseCase.execute(searchableDTO);
     return UsersController.userListToResponse(output)
   }
 
+  @UseGuards(AuthGuard)
   @Put("/:id")
   async update(
     @Param("id") userId: string,
@@ -85,6 +90,7 @@ export class UsersController {
     return UsersController.userToResponse(output);
   }
 
+  @UseGuards(AuthGuard)
   @Patch("/:id")
   async updatePassword(
     @Param("id") userId: string,
@@ -93,10 +99,10 @@ export class UsersController {
     return UsersController.userToResponse(output);
   }
 
+  @UseGuards(AuthGuard)
   @HttpCode(204)
   @Delete("/:id")
   async delete(@Param("id") userId: string) {
     return this.deleteUserUseCase.execute({ id: userId })
- 
   }
 }
