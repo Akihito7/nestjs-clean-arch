@@ -7,7 +7,8 @@ export class AuthService {
   constructor(private readonly jwtService: JwtService, private readonly configService: EnvConfigService) { }
 
   generateToken(userId: string) {
-    return this.jwtService.sign({ sub: userId });
+    const acessToken = this.jwtService.sign({ sub: userId });
+    return { acessToken }
   }
 
   async verifyJwt(token: string) {

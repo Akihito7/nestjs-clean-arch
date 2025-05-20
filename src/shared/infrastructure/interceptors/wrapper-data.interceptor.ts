@@ -5,11 +5,11 @@ import { map } from 'rxjs/operators';
 
 @Injectable()
 export class WrapperDataInterceptor implements NestInterceptor {
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(_: ExecutionContext, next: CallHandler): Observable<any> {
     //here is before response, then this is request;
 
     return next
       .handle()
-      .pipe(map((body) => !body || 'meta' in body ? body : { data: body }))
+      .pipe(map((body) => !body || 'acessToken' in body || 'meta' in body ? body : { data: body }))
   }
 }
