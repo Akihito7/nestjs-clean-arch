@@ -26,7 +26,7 @@ export class UserPrismaRepository implements IUserRepository.Repository {
       return UserModelMapper.toEntity(user);
 
     } catch (error) {
-      throw new NotFoundError(`UserModel not found usind email ${email}`)
+      throw new NotFoundError(`UserModel not found using email ${email}`)
     }
   }
 
